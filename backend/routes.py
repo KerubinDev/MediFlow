@@ -631,11 +631,10 @@ def atualizar_usuario(id):
         usuario.nome = dados.get('nome', usuario.nome)
         usuario.email = dados.get('email', usuario.email)
         usuario.tipo = dados.get('tipo', usuario.tipo)
-        usuario.ativo = dados.get('ativo', usuario.ativo)
         
         # Atualizar senha se fornecida
         if 'senha' in dados and dados['senha']:
-            usuario.set_password(dados['senha'])
+            usuario.set_senha(dados['senha'])
         
         db.session.commit()
         return jsonify({'mensagem': 'Usuário atualizado com sucesso'})
