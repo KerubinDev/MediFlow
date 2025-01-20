@@ -11,13 +11,14 @@ window.API = window.API || {
     // Consultas
     async criarConsulta(dados) {
         try {
-            const response = await Utils.fetchWithRetry('/api/consulta', {
+            const response = await Utils.fetchWithRetry('/api/consultas', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dados)
             });
+            const result = await response.json();
             Utils.mostrarFeedback('Consulta criada com sucesso!');
-            return response.json();
+            return result;
         } catch (error) {
             Utils.mostrarFeedback(error.message, 'danger');
             throw error;
@@ -26,13 +27,14 @@ window.API = window.API || {
 
     async atualizarConsulta(id, dados) {
         try {
-            const response = await Utils.fetchWithRetry(`/api/consulta/${id}`, {
+            const response = await Utils.fetchWithRetry(`/api/consultas/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dados)
             });
+            const result = await response.json();
             Utils.mostrarFeedback('Consulta atualizada com sucesso!');
-            return response.json();
+            return result;
         } catch (error) {
             Utils.mostrarFeedback(error.message, 'danger');
             throw error;
@@ -40,22 +42,37 @@ window.API = window.API || {
     },
 
     async realizarConsulta(id) {
-        const response = await fetch(`/api/consulta/${id}/realizar`, {
-            method: 'PUT'
-        });
-        return this.handleResponse(response);
+        try {
+            const response = await Utils.fetchWithRetry(`/api/consultas/${id}/realizar`, {
+                method: 'PUT'
+            });
+            return this.handleResponse(response);
+        } catch (error) {
+            Utils.mostrarFeedback(error.message, 'danger');
+            throw error;
+        }
     },
 
     async cancelarConsulta(id) {
-        const response = await fetch(`/api/consulta/${id}/cancelar`, {
-            method: 'PUT'
-        });
-        return this.handleResponse(response);
+        try {
+            const response = await Utils.fetchWithRetry(`/api/consultas/${id}/cancelar`, {
+                method: 'PUT'
+            });
+            return this.handleResponse(response);
+        } catch (error) {
+            Utils.mostrarFeedback(error.message, 'danger');
+            throw error;
+        }
     },
 
     async obterConsulta(id) {
-        const response = await fetch(`/api/consulta/${id}`);
-        return response.json();
+        try {
+            const response = await Utils.fetchWithRetry(`/api/consultas/${id}`);
+            return response.json();
+        } catch (error) {
+            Utils.mostrarFeedback(error.message, 'danger');
+            throw error;
+        }
     },
 
     // Prontuários

@@ -90,17 +90,26 @@ const Utils = {
             const timeoutId = setTimeout(() => controller.abort(), 5000);
             
             options.signal = controller.signal;
+            options.headers = {
+                ...options.headers,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            };
+            
             const response = await fetch(url, options);
             clearTimeout(timeoutId);
             
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(JSON.stringify(errorData));
+                throw new Error(JSON.stringify({
+                    code: response.status,
+                    message: errorData.erro || errorData.description || 'Erro desconhecido'
+                }));
             }
             
             return response;
         } catch (error) {
-            if (retries > 0) {
+            if (retries > 0 && !error.name === 'AbortError') {
                 console.warn(`Tentativa falhou, tentando novamente... (${retries} tentativas restantes)`);
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 return Utils.fetchWithRetry(url, options, retries - 1);

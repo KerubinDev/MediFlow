@@ -47,94 +47,71 @@ def recepcionista_required(f):
     return decorated_function
 
 # Rotas da API
-@api.route('/api/consulta', methods=['POST'])
+@api.route('/api/consultas', methods=['GET'])
+@login_required
+def listar_consultas():
+    consultas = Consulta.query.all()
+    return jsonify([{
+        'id': c.id,
+        'paciente_id': c.paciente_id,
+        'medico_id': c.medico_id,
+        'data_hora': c.data_hora.isoformat(),
+        'status': c.status
+    } for c in consultas])
+
+@api.route('/api/consultas', methods=['POST'])
 @login_required
 def criar_consulta():
-    """Cria uma nova consulta"""
     dados = request.get_json()
-    
     consulta = Consulta(
         paciente_id=dados['paciente_id'],
         medico_id=dados['medico_id'],
         data_hora=datetime.fromisoformat(dados['data_hora']),
         status='agendada'
     )
-    
     db.session.add(consulta)
     db.session.commit()
-    
-    return jsonify({'mensagem': 'Consulta criada com sucesso'})
+    return jsonify({'mensagem': 'Consulta criada com sucesso', 'id': consulta.id})
 
-
-@api.route('/api/consulta/<int:id>', methods=['GET'])
+@api.route('/api/consultas/<int:id>', methods=['GET'])
 @login_required
 def obter_consulta(id):
-    """Retorna detalhes de uma consulta específica"""
     consulta = Consulta.query.get_or_404(id)
     return jsonify({
         'id': consulta.id,
         'paciente_id': consulta.paciente_id,
         'medico_id': consulta.medico_id,
         'data_hora': consulta.data_hora.isoformat(),
-        'status': consulta.status,
-        'paciente': {
-            'nome': consulta.paciente.nome
-        },
-        'medico': {
-            'nome': consulta.medico.nome
-        }
+        'status': consulta.status
     })
 
-
-@api.route('/api/consulta/<int:id>', methods=['PUT'])
+@api.route('/api/consultas/<int:id>', methods=['PUT'])
 @login_required
 def atualizar_consulta(id):
-    """Atualiza uma consulta existente"""
     consulta = Consulta.query.get_or_404(id)
     dados = request.get_json()
-    
     consulta.paciente_id = dados['paciente_id']
     consulta.medico_id = dados['medico_id']
     consulta.data_hora = datetime.fromisoformat(dados['data_hora'])
-    
     db.session.commit()
     return jsonify({'mensagem': 'Consulta atualizada com sucesso'})
 
-
-@api.route('/api/consulta/<int:id>/realizar', methods=['PUT'])
+@api.route('/api/consultas/<int:id>/realizar', methods=['PUT'])
 @login_required
 @medico_required
 def realizar_consulta(id):
-    """Marca uma consulta como realizada"""
-    try:
-        print(f"Realizando consulta {id}")
-        consulta = Consulta.query.get_or_404(id)
-        consulta.status = 'realizada'
-        db.session.commit()
-        print("Consulta realizada com sucesso")
-        return jsonify({'mensagem': 'Consulta realizada com sucesso'})
-    except Exception as e:
-        print(f"Erro ao realizar consulta: {str(e)}")
-        db.session.rollback()
-        return jsonify({'erro': str(e)}), 500
+    consulta = Consulta.query.get_or_404(id)
+    consulta.status = 'realizada'
+    db.session.commit()
+    return jsonify({'mensagem': 'Consulta realizada com sucesso'})
 
-
-@api.route('/api/consulta/<int:id>/cancelar', methods=['PUT'])
+@api.route('/api/consultas/<int:id>/cancelar', methods=['PUT'])
 @login_required
 def cancelar_consulta(id):
-    """Cancela uma consulta"""
-    try:
-        print(f"Cancelando consulta {id}")
-        consulta = Consulta.query.get_or_404(id)
-        consulta.status = 'cancelada'
-        db.session.commit()
-        print("Consulta cancelada com sucesso")
-        return jsonify({'mensagem': 'Consulta cancelada com sucesso'})
-    except Exception as e:
-        print(f"Erro ao cancelar consulta: {str(e)}")
-        db.session.rollback()
-        return jsonify({'erro': str(e)}), 500
-
+    consulta = Consulta.query.get_or_404(id)
+    consulta.status = 'cancelada'
+    db.session.commit()
+    return jsonify({'mensagem': 'Consulta cancelada com sucesso'})
 
 @api.route('/prontuarios/criar', methods=['POST'])
 @login_required
