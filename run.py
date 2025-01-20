@@ -1,3 +1,10 @@
+"""
+MediFlow - Sistema de Gestão para Clínicas Médicas
+Desenvolvido por Kelvin Moraes (@KerubinDev)
+GitHub: https://github.com/KerubinDev
+Email: kelvin.moraes117@gmail.com
+"""
+
 from backend.app import criar_app
 from backend.scripts.init_db import inicializar_banco
 import os

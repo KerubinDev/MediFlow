@@ -1,3 +1,11 @@
+"""
+MediFlow - Sistema de Gestão para Clínicas Médicas
+Backend principal do sistema
+Desenvolvido por Kelvin Moraes (@KerubinDev)
+GitHub: https://github.com/KerubinDev
+Email: kelvin.moraes117@gmail.com
+"""
+
 from flask import Flask, jsonify, request, current_app
 from flask_cors import CORS
 from flask_login import LoginManager
