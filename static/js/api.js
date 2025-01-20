@@ -161,6 +161,64 @@ window.API = window.API || {
     async obterHistoricoPaciente(id) {
         const response = await fetch(`/api/pacientes/${id}/historico`);
         return response.json();
+    },
+
+    // Usuários
+    async criarUsuario(dados) {
+        try {
+            console.log('Criando usuário:', dados);
+            const result = await Utils.fetchWithRetry('/api/usuarios/criar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            Utils.mostrarFeedback('Usuário criado com sucesso!');
+            return result;
+        } catch (error) {
+            console.error('Erro ao criar usuário:', error);
+            Utils.mostrarFeedback(
+                error.message || 'Erro ao criar usuário. Tente novamente.',
+                'danger'
+            );
+            throw error;
+        }
+    },
+
+    async obterUsuario(id) {
+        try {
+            console.log(`Obtendo usuário ${id}`);
+            const result = await Utils.fetchWithRetry(`/api/usuarios/${id}`, {
+                method: 'GET'
+            });
+            return result;
+        } catch (error) {
+            console.error('Erro ao obter usuário:', error);
+            Utils.mostrarFeedback(
+                'Erro ao carregar dados do usuário. Tente novamente.',
+                'danger'
+            );
+            throw error;
+        }
+    },
+
+    async atualizarUsuario(id, dados) {
+        try {
+            console.log(`Atualizando usuário ${id}:`, dados);
+            const result = await Utils.fetchWithRetry(`/api/usuarios/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            Utils.mostrarFeedback('Usuário atualizado com sucesso!');
+            return result;
+        } catch (error) {
+            console.error('Erro ao atualizar usuário:', error);
+            Utils.mostrarFeedback(
+                error.message || 'Erro ao atualizar usuário. Tente novamente.',
+                'danger'
+            );
+            throw error;
+        }
     }
 };
 

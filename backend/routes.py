@@ -516,3 +516,102 @@ def usuarios():
     """Página de gerenciamento de usuários"""
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     return render_template('usuarios.html', usuarios=usuarios)
+
+@api.route('/usuarios', methods=['GET'])
+@login_required
+@admin_required
+def listar_usuarios():
+    try:
+        usuarios = Usuario.query.all()
+        return jsonify([{
+            'id': u.id,
+            'nome': u.nome,
+            'email': u.email,
+            'tipo': u.tipo,
+            'ativo': u.ativo
+        } for u in usuarios])
+    except Exception as e:
+        current_app.logger.error(f"Erro ao listar usuários: {str(e)}")
+        return jsonify({'erro': str(e)}), 500
+
+@api.route('/usuarios/<int:id>', methods=['GET'])
+@login_required
+@admin_required
+def obter_usuario(id):
+    try:
+        usuario = Usuario.query.get_or_404(id)
+        return jsonify({
+            'id': usuario.id,
+            'nome': usuario.nome,
+            'email': usuario.email,
+            'tipo': usuario.tipo,
+            'ativo': usuario.ativo
+        })
+    except Exception as e:
+        current_app.logger.error(f"Erro ao obter usuário {id}: {str(e)}")
+        return jsonify({'erro': str(e)}), 500
+
+@api.route('/usuarios/criar', methods=['POST'])
+@login_required
+@admin_required
+def criar_usuario():
+    try:
+        dados = request.get_json()
+        current_app.logger.debug(f"Dados recebidos para criar usuário: {dados}")
+        
+        # Validar dados obrigatórios
+        campos_obrigatorios = ['nome', 'email', 'senha', 'tipo']
+        if not all(campo in dados for campo in campos_obrigatorios):
+            return jsonify({
+                'erro': 'Dados incompletos. Todos os campos são obrigatórios.'
+            }), 400
+            
+        # Verificar se email já existe
+        if Usuario.query.filter_by(email=dados['email']).first():
+            return jsonify({'erro': 'Email já cadastrado'}), 400
+            
+        usuario = Usuario(
+            nome=dados['nome'],
+            email=dados['email'],
+            tipo=dados['tipo'],
+            ativo=True
+        )
+        usuario.set_password(dados['senha'])
+        
+        db.session.add(usuario)
+        db.session.commit()
+        
+        current_app.logger.info(f"Usuário criado com sucesso: ID {usuario.id}")
+        return jsonify({
+            'mensagem': 'Usuário criado com sucesso',
+            'id': usuario.id
+        })
+    except Exception as e:
+        current_app.logger.error(f"Erro ao criar usuário: {str(e)}")
+        db.session.rollback()
+        return jsonify({'erro': str(e)}), 500
+
+@api.route('/usuarios/<int:id>', methods=['PUT'])
+@login_required
+@admin_required
+def atualizar_usuario(id):
+    try:
+        usuario = Usuario.query.get_or_404(id)
+        dados = request.get_json()
+        
+        # Atualizar dados básicos
+        usuario.nome = dados.get('nome', usuario.nome)
+        usuario.email = dados.get('email', usuario.email)
+        usuario.tipo = dados.get('tipo', usuario.tipo)
+        usuario.ativo = dados.get('ativo', usuario.ativo)
+        
+        # Atualizar senha se fornecida
+        if 'senha' in dados and dados['senha']:
+            usuario.set_password(dados['senha'])
+        
+        db.session.commit()
+        return jsonify({'mensagem': 'Usuário atualizado com sucesso'})
+    except Exception as e:
+        current_app.logger.error(f"Erro ao atualizar usuário {id}: {str(e)}")
+        db.session.rollback()
+        return jsonify({'erro': str(e)}), 500
