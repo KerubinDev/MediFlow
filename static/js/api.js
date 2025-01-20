@@ -154,12 +154,8 @@ window.API = window.API || {
     async imprimirProntuario(id) {
         try {
             console.log(`Imprimindo prontuário ${id}`);
-            const result = await Utils.fetchWithRetry(`/api/prontuarios/${id}/imprimir`, {
-                method: 'GET'
-            });
             // Abrir em nova aba para impressão
             window.open(`/api/prontuarios/${id}/imprimir`, '_blank');
-            return result;
         } catch (error) {
             console.error('Erro ao imprimir prontuário:', error);
             Utils.mostrarFeedback(
