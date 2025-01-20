@@ -94,26 +94,80 @@ window.API = window.API || {
     },
 
     // Prontuários
+    async obterProntuario(consultaId) {
+        try {
+            console.log(`Obtendo prontuário da consulta ${consultaId}`);
+            const result = await Utils.fetchWithRetry(`/api/prontuarios/${consultaId}/detalhes`, {
+                method: 'GET'
+            });
+            return result;
+        } catch (error) {
+            console.error('Erro ao obter prontuário:', error);
+            Utils.mostrarFeedback(
+                'Erro ao carregar dados do prontuário. Tente novamente.',
+                'danger'
+            );
+            throw error;
+        }
+    },
+
     async criarProntuario(dados) {
-        return await Utils.fetchWithRetry('/api/prontuarios', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dados)
-        });
+        try {
+            console.log('Criando prontuário:', dados);
+            const result = await Utils.fetchWithRetry('/api/prontuarios', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            Utils.mostrarFeedback('Prontuário criado com sucesso!');
+            return result;
+        } catch (error) {
+            console.error('Erro ao criar prontuário:', error);
+            Utils.mostrarFeedback(
+                error.message || 'Erro ao criar prontuário. Tente novamente.',
+                'danger'
+            );
+            throw error;
+        }
     },
 
     async atualizarProntuario(id, dados) {
-        return await Utils.fetchWithRetry(`/api/prontuarios/${id}/atualizar`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dados)
-        });
+        try {
+            console.log(`Atualizando prontuário ${id}:`, dados);
+            const result = await Utils.fetchWithRetry(`/api/prontuarios/${id}/atualizar`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            Utils.mostrarFeedback('Prontuário atualizado com sucesso!');
+            return result;
+        } catch (error) {
+            console.error('Erro ao atualizar prontuário:', error);
+            Utils.mostrarFeedback(
+                error.message || 'Erro ao atualizar prontuário. Tente novamente.',
+                'danger'
+            );
+            throw error;
+        }
     },
 
     async imprimirProntuario(id) {
-        const result = await Utils.fetchWithRetry(`/api/prontuarios/${id}/imprimir`);
-        window.open(`/api/prontuarios/${id}/imprimir`, '_blank');
-        return result;
+        try {
+            console.log(`Imprimindo prontuário ${id}`);
+            const result = await Utils.fetchWithRetry(`/api/prontuarios/${id}/imprimir`, {
+                method: 'GET'
+            });
+            // Abrir em nova aba para impressão
+            window.open(`/api/prontuarios/${id}/imprimir`, '_blank');
+            return result;
+        } catch (error) {
+            console.error('Erro ao imprimir prontuário:', error);
+            Utils.mostrarFeedback(
+                'Erro ao gerar impressão do prontuário. Tente novamente.',
+                'danger'
+            );
+            throw error;
+        }
     },
 
     // Pacientes

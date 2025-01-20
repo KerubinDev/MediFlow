@@ -180,6 +180,40 @@
         </div>
     </div>
 </div>
+
+<!-- Modal de Prontuário -->
+<div class="modal fade" id="modalProntuario" tabindex="-1" data-bs-backdrop="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content glass-card">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-gradient">Prontuário</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formProntuario">
+                    <div class="mb-3">
+                        <label class="form-label">Diagnóstico</label>
+                        <textarea class="form-control" id="diagnostico" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Prescrição</label>
+                        <textarea class="form-control" id="prescricao" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Exames Solicitados</label>
+                        <textarea class="form-control" id="exames" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn-neon" onclick="salvarProntuario()">Salvar</button>
+                <button type="button" class="btn-neon" onclick="imprimirProntuario()">
+                    <i class="fas fa-print"></i> Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -281,8 +315,83 @@
         }
     }
 
-    function verProntuario(id) {
-        window.location.href = `/prontuarios/${id}`;
+    async function verProntuario(consultaId) {
+        try {
+            Utils.limparModais();
+            Utils.toggleLoading(true);
+            
+            // Tentar obter prontuário existente
+            try {
+                const prontuario = await API.obterProntuario(consultaId);
+                document.getElementById('diagnostico').value = prontuario.diagnostico || '';
+                document.getElementById('prescricao').value = prontuario.prescricao || '';
+                document.getElementById('exames').value = prontuario.exames_solicitados || '';
+                document.getElementById('formProntuario').dataset.prontuarioId = prontuario.id;
+            } catch (error) {
+                // Se não existir prontuário, limpar o formulário
+                document.getElementById('formProntuario').reset();
+                delete document.getElementById('formProntuario').dataset.prontuarioId;
+            }
+            
+            // Guardar o ID da consulta
+            document.getElementById('formProntuario').dataset.consultaId = consultaId;
+            
+            const modalEl = document.getElementById('modalProntuario');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        } catch (error) {
+            Utils.mostrarFeedback('Erro ao carregar prontuário', 'danger');
+        } finally {
+            Utils.toggleLoading(false);
+        }
+    }
+
+    async function salvarProntuario() {
+        try {
+            if (!Utils.validarFormulario('formProntuario')) {
+                Utils.mostrarFeedback('Por favor, preencha todos os campos obrigatórios', 'warning');
+                return;
+            }
+
+            const form = document.getElementById('formProntuario');
+            const prontuarioId = form.dataset.prontuarioId;
+            const consultaId = form.dataset.consultaId;
+            
+            const dados = {
+                consulta_id: consultaId,
+                diagnostico: document.getElementById('diagnostico').value,
+                prescricao: document.getElementById('prescricao').value,
+                exames_solicitados: document.getElementById('exames').value
+            };
+
+            if (prontuarioId) {
+                await API.atualizarProntuario(prontuarioId, dados);
+            } else {
+                await API.criarProntuario(dados);
+            }
+            
+            Utils.mostrarFeedback('Prontuário salvo com sucesso!');
+            Utils.limparModais();
+            location.reload();
+        } catch (error) {
+            Utils.mostrarFeedback('Erro ao salvar prontuário', 'danger');
+        }
+    }
+
+    async function imprimirProntuario() {
+        try {
+            const form = document.getElementById('formProntuario');
+            const prontuarioId = form.dataset.prontuarioId;
+            
+            if (!prontuarioId) {
+                Utils.mostrarFeedback('Salve o prontuário antes de imprimir', 'warning');
+                return;
+            }
+            
+            await API.imprimirProntuario(prontuarioId);
+        } catch (error) {
+            Utils.mostrarFeedback('Erro ao imprimir prontuário', 'danger');
+        }
     }
 
     // Adicionar busca com debounce
