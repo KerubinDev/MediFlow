@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Usuários{% endblock %}
+
+{% block content %}
+<div class="usuarios-container">
+    <h1>Gerenciamento de Usuários</h1>
+    
+    <div class="actions">
+        <button class="btn-primary" onclick="mostrarModalCadastro()">
+            Novo Usuário
+        </button>
+    </div>
+
+    <div class="usuarios-lista">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Tipo</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr>
+                    <td>{{ usuario.nome }}</td>
+                    <td>{{ usuario.email }}</td>
+                    <td>{{ usuario.tipo }}</td>
+                    <td>
+                        <button onclick="editarUsuario({{ usuario.id }})" 
+                                class="btn-secondary">
+                            Editar
+                        </button>
+                        {% if usuario.id != current_user.id %}
+                        <button onclick="excluirUsuario({{ usuario.id }})" 
+                                class="btn-danger">
+                            Excluir
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal de Cadastro/Edição -->
+<div id="modalUsuario" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="modalTitulo">Novo Usuário</h2>
+        <form id="formUsuario" onsubmit="salvarUsuario(event)">
+            <input type="hidden" id="usuarioId">
+            <div class="form-group">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="senha">Senha:</label>
+                <input type="password" id="senha">
+                <small>Deixe em branco para manter a senha atual ao editar</small>
+            </div>
+            <div class="form-group">
+                <label for="tipo">Tipo:</label>
+                <select id="tipo" required>
+                    <option value="admin">Administrador</option>
+                    <option value="medico">Médico</option>
+                    <option value="recepcionista">Recepcionista</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-primary">Salvar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Adicione o JavaScript necessário para gerenciar o modal e as operações CRUD
+</script>
+{% endblock %} 

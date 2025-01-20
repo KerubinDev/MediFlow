@@ -319,3 +319,11 @@ def index():
         elif current_user.is_recepcionista():
             return redirect(url_for('views.pacientes'))
     return redirect(url_for('auth.login'))
+
+@views.route('/usuarios')
+@login_required
+@admin_required
+def usuarios():
+    """Página de gerenciamento de usuários"""
+    usuarios = Usuario.query.order_by(Usuario.nome).all()
+    return render_template('usuarios.html', usuarios=usuarios)
