@@ -143,7 +143,7 @@
 </div>
 
 <!-- Modal de Consulta -->
-<div class="modal fade" id="modalConsulta" tabindex="-1">
+<div class="modal fade" id="modalConsulta" tabindex="-1" data-bs-backdrop="false">
     <div class="modal-dialog">
         <div class="modal-content glass-card">
             <div class="modal-header border-0">
@@ -188,8 +188,47 @@
     <script>
     particlesJS('particles-js', particlesConfig);
 
+    // Função para limpar modais
+    function limparModais() {
+        // Remove backdrops
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        
+        // Remove classes do body
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = 'auto';
+        document.body.style.paddingRight = '0';
+        
+        // Fecha todos os modais
+        document.querySelectorAll('.modal').forEach(modal => {
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+        });
+    }
+
+    function mostrarModalConsulta() {
+        limparModais();
+        document.getElementById('formConsulta').reset();
+        document.getElementById('formConsulta').removeAttribute('data-consulta-id');
+        document.querySelector('#modalConsulta .modal-title').textContent = 'Nova Consulta';
+        
+        const modalEl = document.getElementById('modalConsulta');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+
+        // Remove qualquer backdrop residual
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.body.style.overflow = 'auto';
+        document.body.style.paddingRight = '0';
+    }
+
     async function editarConsulta(id) {
         try {
+            limparModais();
+            
             const response = await fetch(`/api/consultas/${id}/detalhes`);
             const consulta = await response.json();
             
@@ -200,8 +239,16 @@
             
             document.getElementById('formConsulta').dataset.consultaId = id;
             
-            $('#modalConsulta').modal('show');
+            const modalEl = document.getElementById('modalConsulta');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+
+            // Remove qualquer backdrop residual
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.style.overflow = 'auto';
+            document.body.style.paddingRight = '0';
         } catch (error) {
+            console.error('Erro:', error);
             alert('Erro ao carregar dados da consulta');
         }
     }
@@ -226,13 +273,6 @@
         } catch (error) {
             alert('Erro ao salvar consulta');
         }
-    }
-
-    function mostrarModalConsulta() {
-        document.getElementById('formConsulta').reset();
-        document.getElementById('formConsulta').removeAttribute('data-consulta-id');
-        document.querySelector('#modalConsulta .modal-title').textContent = 'Nova Consulta';
-        $('#modalConsulta').modal('show');
     }
 
     async function realizarConsulta(id) {
