@@ -204,8 +204,14 @@
 
     async function editarProntuario(id) {
         try {
+            console.log(`Editando prontuário ${id}`);
             const response = await fetch(`/api/prontuarios/${id}/detalhes`);
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.erro || 'Erro ao carregar prontuário');
+            }
             const prontuario = await response.json();
+            console.log('Dados do prontuário:', prontuario);
             
             document.getElementById('diagnostico').value = prontuario.diagnostico;
             document.getElementById('prescricao').value = prontuario.prescricao;
@@ -215,6 +221,7 @@
             
             $('#modalProntuario').modal('show');
         } catch (error) {
+            console.error('Erro:', error);
             alert('Erro ao carregar dados do prontuário');
         }
     }

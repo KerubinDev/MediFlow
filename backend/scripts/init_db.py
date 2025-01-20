@@ -48,129 +48,84 @@ def criar_usuarios_padrao():
 
 def criar_dados_exemplo():
     """Cria dados de exemplo no banco de dados"""
-    
-    # Criar usuários
-    usuarios = [
-        Usuario(
-            nome='Admin',
-            email='admin@medflow.com',
-            senha=generate_password_hash('admin123'),
-            tipo='admin'
-        ),
-        Usuario(
+    try:
+        print("Iniciando criação de dados de exemplo...")
+        
+        # Criar usuário médico
+        usuario_medico = Usuario(
             nome='Dr. João Silva',
             email='joao.silva@medflow.com',
             senha=generate_password_hash('medico123'),
             tipo='medico'
-        ),
-        Usuario(
-            nome='Maria Recepcionista',
-            email='maria@medflow.com',
-            senha=generate_password_hash('recep123'),
-            tipo='recepcionista'
         )
-    ]
-    
-    for usuario in usuarios:
-        db.session.add(usuario)
-    
-    db.session.flush()  # Para obter os IDs dos usuários
-    
-    # Criar médicos
-    medicos = [
-        Medico(
+        db.session.add(usuario_medico)
+        db.session.flush()
+        print(f"Usuário médico criado com ID: {usuario_medico.id}")
+        
+        # Criar médico
+        medico = Medico(
             nome='Dr. João Silva',
-            crm='12345-SP',  # Adicionado CRM
+            crm='12345-SP',
             especialidade='Clínico Geral',
-            usuario_id=usuarios[1].id,  # Associar ao usuário médico
+            usuario_id=usuario_medico.id,
             horario_disponivel='08:00-18:00'
-        ),
-        Medico(
-            nome='Dra. Ana Santos',
-            crm='54321-SP',  # Adicionado CRM
-            especialidade='Pediatra',
-            usuario_id=usuarios[1].id,  # Você pode criar outro usuário médico se preferir
-            horario_disponivel='09:00-17:00'
         )
-    ]
-    
-    for medico in medicos:
         db.session.add(medico)
-    
-    db.session.flush()  # Para obter os IDs dos médicos
-    
-    # Criar pacientes
-    pacientes = [
-        Paciente(
-            nome='Carlos Oliveira',
-            telefone='(11) 99999-2222',
-            data_nascimento=datetime(1985, 8, 20),
-            endereco='Rua B, 456'
-        ),
-        Paciente(
+        db.session.flush()
+        print(f"Médico criado com ID: {medico.id}")
+        
+        # Criar paciente
+        paciente = Paciente(
             nome='Ana Santos',
             telefone='(11) 99999-1111',
             data_nascimento=datetime(1990, 5, 15),
             endereco='Rua A, 123'
         )
-    ]
-    
-    for paciente in pacientes:
         db.session.add(paciente)
-    
-    db.session.flush()  # Para obter os IDs dos pacientes
-    
-    # Criar consultas
-    hoje = datetime.now()
-    consultas = [
-        Consulta(
-            paciente_id=pacientes[0].id,
-            medico_id=medicos[0].id,
-            data_hora=hoje + timedelta(days=1, hours=10),
-            status='agendada'
-        ),
-        Consulta(
-            paciente_id=pacientes[1].id,
-            medico_id=medicos[1].id,
-            data_hora=hoje + timedelta(days=2, hours=14),
-            status='agendada'
+        db.session.flush()
+        print(f"Paciente criado com ID: {paciente.id}")
+        
+        # Criar consulta realizada
+        consulta = Consulta(
+            paciente_id=paciente.id,
+            medico_id=medico.id,
+            data_hora=datetime.now() - timedelta(days=1),
+            status='realizada'
         )
-    ]
-    
-    for consulta in consultas:
         db.session.add(consulta)
-    
-    # Criar prontuários para consultas realizadas
-    consulta_realizada = Consulta(
-        paciente_id=pacientes[0].id,
-        medico_id=medicos[0].id,
-        data_hora=hoje - timedelta(days=5),
-        status='realizada'
-    )
-    db.session.add(consulta_realizada)
-    db.session.flush()
-    
-    prontuario = Prontuario(
-        consulta_id=consulta_realizada.id,
-        diagnostico='Gripe comum',
-        prescricao='Repouso e hidratação',
-        exames_solicitados='Hemograma completo'
-    )
-    db.session.add(prontuario)
-    
-    try:
+        db.session.flush()
+        print(f"Consulta criada com ID: {consulta.id}")
+        
+        # Criar prontuário
+        prontuario = Prontuario(
+            consulta_id=consulta.id,
+            diagnostico='Gripe comum',
+            prescricao='Repouso e hidratação',
+            exames_solicitados='Hemograma completo'
+        )
+        db.session.add(prontuario)
+        db.session.flush()
+        print(f"Prontuário criado com ID: {prontuario.id}")
+        
+        # Commit final
         db.session.commit()
         print("Dados de exemplo criados com sucesso!")
+        
     except Exception as e:
         db.session.rollback()
         print(f"Erro ao criar dados de exemplo: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise
 
 def inicializar_banco():
     """Inicializa o banco de dados com dados de exemplo"""
-    db.drop_all()  # Limpa o banco existente
-    db.create_all()  # Cria as tabelas
-    criar_dados_exemplo()  # Popula com dados de exemplo
+    print("Iniciando inicialização do banco...")
+    db.drop_all()
+    print("Tabelas antigas removidas")
+    db.create_all()
+    print("Novas tabelas criadas")
+    criar_dados_exemplo()
 
 if __name__ == '__main__':
     inicializar_banco() 

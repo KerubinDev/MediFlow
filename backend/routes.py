@@ -148,18 +148,25 @@ def atualizar_consulta(id):
 def obter_prontuario_detalhes(id):
     """Retorna detalhes de um prontuário específico"""
     try:
+        print(f"Buscando prontuário com ID: {id}")
         prontuario = Prontuario.query.get_or_404(id)
+        print(f"Prontuário encontrado: {prontuario.id}")
         
         if not prontuario.consulta:
+            print("Consulta não encontrada")
             return jsonify({'erro': 'Consulta não encontrada para este prontuário'}), 404
             
+        print(f"Consulta encontrada: {prontuario.consulta.id}")
+        
         if not prontuario.consulta.paciente:
+            print("Paciente não encontrado")
             return jsonify({'erro': 'Paciente não encontrado para esta consulta'}), 404
             
         if not prontuario.consulta.medico:
+            print("Médico não encontrado")
             return jsonify({'erro': 'Médico não encontrado para esta consulta'}), 404
         
-        return jsonify({
+        dados = {
             'id': prontuario.id,
             'consulta': {
                 'id': prontuario.consulta.id,
@@ -176,9 +183,13 @@ def obter_prontuario_detalhes(id):
             'diagnostico': prontuario.diagnostico,
             'prescricao': prontuario.prescricao,
             'exames_solicitados': prontuario.exames_solicitados
-        })
+        }
+        print(f"Dados do prontuário: {dados}")
+        return jsonify(dados)
     except Exception as e:
         print(f"Erro ao obter prontuário: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'erro': f'Erro ao carregar dados do prontuário: {str(e)}'}), 500
 
 
