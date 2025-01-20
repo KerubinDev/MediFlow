@@ -2,49 +2,189 @@
 
 {% block title %}Dashboard{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Fundo e efeitos */
+    .dashboard-container {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .particles-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+    }
+
+    /* Cards de métricas */
+    .metric-card {
+        margin-bottom: 1.5rem;
+    }
+
+    .metric-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .metric-card .icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: #4ECDC4;
+    }
+
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .metric-label {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+    }
+
+    /* Gráficos */
+    .chart-container {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="dashboard-container">
-    <h1>Dashboard MedFlow</h1>
-    
-    <div class="dashboard-stats">
-        <div class="stat-card">
-            <h3>Consultas Hoje</h3>
-            <p class="stat-number">{{ stats.consultas_hoje }}</p>
+    <!-- Fundo animado com partículas -->
+    <div id="particles-js" class="particles-background"></div>
+
+    <!-- Métricas -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="glass-card metric-card">
+                <div class="card-body">
+                    <div class="icon">
+                        <i class="fas fa-user-injured"></i>
+                    </div>
+                    <h3 class="metric-value text-white">{{ stats.total_pacientes }}</h3>
+                    <p class="metric-label">Total de Pacientes</p>
+                </div>
+            </div>
         </div>
-        <div class="stat-card">
-            <h3>Pacientes Totais</h3>
-            <p class="stat-number">{{ stats.total_pacientes }}</p>
+        <div class="col-md-3">
+            <div class="glass-card metric-card">
+                <div class="card-body">
+                    <div class="icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3 class="metric-value text-white">{{ stats.consultas_hoje }}</h3>
+                    <p class="metric-label">Consultas Hoje</p>
+                </div>
+            </div>
         </div>
-        <div class="stat-card">
-            <h3>Médicos Ativos</h3>
-            <p class="stat-number">{{ stats.medicos_ativos }}</p>
+        <div class="col-md-3">
+            <div class="glass-card metric-card">
+                <div class="card-body">
+                    <div class="icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h3 class="metric-value text-white">{{ stats.medicos_ativos }}</h3>
+                    <p class="metric-label">Médicos Ativos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card metric-card">
+                <div class="card-body">
+                    <div class="icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <h3 class="metric-value text-white">{{ stats.consultas_realizadas }}</h3>
+                    <p class="metric-label">Consultas Realizadas</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="dashboard-content">
-        <div class="proximas-consultas">
-            <h2>Próximas Consultas</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Horário</th>
-                        <th>Paciente</th>
-                        <th>Médico</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for consulta in consultas %}
-                    <tr>
-                        <td>{{ consulta.data_hora.strftime('%H:%M') }}</td>
-                        <td>{{ consulta.paciente.nome }}</td>
-                        <td>{{ consulta.medico.nome }}</td>
-                        <td>{{ consulta.status }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <!-- Gráficos -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="glass-card chart-container">
+                <h5 class="text-gradient mb-4">Consultas por Período</h5>
+                <canvas id="consultasChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card chart-container">
+                <h5 class="text-gradient mb-4">Status das Consultas</h5>
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Consultas do Dia -->
+    <div class="glass-card mt-4">
+        <div class="card-body">
+            <h5 class="text-gradient mb-4">Consultas de Hoje</h5>
+            <div class="table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th>Horário</th>
+                            <th>Paciente</th>
+                            <th>Médico</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for consulta in consultas %}
+                        <tr>
+                            <td>{{ consulta.data_hora.strftime('%H:%M') }}</td>
+                            <td>{{ consulta.paciente.nome }}</td>
+                            <td>{{ consulta.medico.nome }}</td>
+                            <td>
+                                <span class="status-badge 
+                                    {% if consulta.status == 'agendada' %}status-ativo
+                                    {% else %}status-inativo{% endif %}">
+                                    {{ consulta.status|title }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script>
+    // Configuração do particles.js
+    particlesJS('particles-js', {
+        particles: {
+            number: { value: 80 },
+            color: { value: '#4ECDC4' },
+            shape: { type: 'circle' },
+            opacity: { value: 0.5 },
+            size: { value: 3 },
+            line_linked: {
+                enable: true,
+                distance: 150,
+                color: '#4ECDC4',
+                opacity: 0.4,
+                width: 1
+            },
+            move: {
+                enable: true,
+                speed: 2
+            }
+        }
+    });
+
+    // Configuração dos gráficos
+    // ... (manter a configuração dos gráficos existente)
+</script>
 {% endblock %}
