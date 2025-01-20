@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1>Dashboard MedFlow</h1>
+    
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <h3>Consultas Hoje</h3>
+            <p class="stat-number">{{ stats.consultas_hoje }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Pacientes Totais</h3>
+            <p class="stat-number">{{ stats.total_pacientes }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Médicos Ativos</h3>
+            <p class="stat-number">{{ stats.medicos_ativos }}</p>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <div class="proximas-consultas">
+            <h2>Próximas Consultas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Horário</th>
+                        <th>Paciente</th>
+                        <th>Médico</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for consulta in consultas %}
+                    <tr>
+                        <td>{{ consulta.data_hora.strftime('%H:%M') }}</td>
+                        <td>{{ consulta.paciente.nome }}</td>
+                        <td>{{ consulta.medico.nome }}</td>
+                        <td>{{ consulta.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

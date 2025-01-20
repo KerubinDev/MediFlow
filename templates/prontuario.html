@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Prontuários{% endblock %}
+
+{% block content %}
+<div class="prontuarios-container">
+    <h1>Prontuários Médicos</h1>
+    
+    <div class="search-box">
+        <input type="text" 
+               id="pesquisaPaciente" 
+               placeholder="Pesquisar paciente..."
+               onkeyup="filtrarProntuarios()">
+    </div>
+
+    <div class="prontuarios-lista">
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Paciente</th>
+                    <th>Médico</th>
+                    <th>Diagnóstico</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prontuario in prontuarios %}
+                <tr>
+                    <td>{{ prontuario.consulta.data_hora.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ prontuario.consulta.paciente.nome }}</td>
+                    <td>{{ prontuario.consulta.medico.nome }}</td>
+                    <td>{{ prontuario.diagnostico[:50] }}...</td>
+                    <td>
+                        <button onclick="verProntuario({{ prontuario.id }})" 
+                                class="btn-secondary">
+                            Ver Detalhes
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal de Detalhes do Prontuário -->
+<div id="modalProntuario" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Detalhes do Prontuário</h2>
+        <div id="prontuarioDetalhes">
+            <div class="prontuario-info">
+                <h3>Informações da Consulta</h3>
+                <p><strong>Data:</strong> <span id="dataConsulta"></span></p>
+                <p><strong>Paciente:</strong> <span id="nomePaciente"></span></p>
+                <p><strong>Médico:</strong> <span id="nomeMedico"></span></p>
+            </div>
+            <div class="prontuario-diagnostico">
+                <h3>Diagnóstico</h3>
+                <p id="diagnosticoTexto"></p>
+            </div>
+            <div class="prontuario-prescricao">
+                <h3>Prescrição</h3>
+                <p id="prescricaoTexto"></p>
+            </div>
+            <div class="prontuario-exames">
+                <h3>Exames Solicitados</h3>
+                <p id="examesTexto"></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function verProntuario(id) {
+    fetch(`/api/prontuarios/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('dataConsulta').textContent = 
+                new Date(data.consulta.data_hora).toLocaleDateString();
+            document.getElementById('nomePaciente').textContent = 
+                data.consulta.paciente.nome;
+            document.getElementById('nomeMedico').textContent = 
+                data.consulta.medico.nome;
+            document.getElementById('diagnosticoTexto').textContent = 
+                data.diagnostico;
+            document.getElementById('prescricaoTexto').textContent = 
+                data.prescricao;
+            document.getElementById('examesTexto').textContent = 
+                data.exames_solicitados;
+            
+            document.getElementById('modalProntuario').style.display = 'block';
+        });
+}
+
+function filtrarProntuarios() {
+    const termo = document.getElementById('pesquisaPaciente')
+        .value.toLowerCase();
+    const linhas = document.querySelectorAll('.prontuarios-lista tbody tr');
+    
+    linhas.forEach(linha => {
+        const nomePaciente = linha.children[1].textContent.toLowerCase();
+        linha.style.display = nomePaciente.includes(termo) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

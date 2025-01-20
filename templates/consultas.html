@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Consultas{% endblock %}
+
+{% block content %}
+<div class="consultas-container">
+    <h1>Gerenciamento de Consultas</h1>
+    
+    <div class="actions">
+        <button class="btn-primary" onclick="mostrarModalAgendamento()">
+            Nova Consulta
+        </button>
+    </div>
+
+    <div class="consultas-lista">
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Hora</th>
+                    <th>Paciente</th>
+                    <th>Médico</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for consulta in consultas %}
+                <tr>
+                    <td>{{ consulta.data_hora.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ consulta.data_hora.strftime('%H:%M') }}</td>
+                    <td>{{ consulta.paciente.nome }}</td>
+                    <td>{{ consulta.medico.nome }}</td>
+                    <td>{{ consulta.status }}</td>
+                    <td>
+                        <button onclick="editarConsulta({{ consulta.id }})">
+                            Editar
+                        </button>
+                        <button onclick="cancelarConsulta({{ consulta.id }})">
+                            Cancelar
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal de Agendamento -->
+<div id="modalAgendamento" class="modal">
+    <!-- Conteúdo do modal aqui -->
+</div>
+{% endblock %}

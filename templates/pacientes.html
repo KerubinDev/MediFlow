@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Pacientes{% endblock %}
+
+{% block content %}
+<div class="pacientes-container">
+    <h1>Gerenciamento de Pacientes</h1>
+    
+    <div class="actions">
+        <button class="btn-primary" onclick="mostrarModalCadastro()">
+            Novo Paciente
+        </button>
+    </div>
+
+    <div class="search-box">
+        <input type="text" 
+               id="pesquisaPaciente" 
+               placeholder="Pesquisar paciente..."
+               onkeyup="filtrarPacientes()">
+    </div>
+
+    <div class="pacientes-lista">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>Data de Nascimento</th>
+                    <th>Endereço</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for paciente in pacientes %}
+                <tr>
+                    <td>{{ paciente.nome }}</td>
+                    <td>{{ paciente.telefone }}</td>
+                    <td>{{ paciente.data_nascimento.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ paciente.endereco }}</td>
+                    <td>
+                        <button onclick="editarPaciente({{ paciente.id }})" 
+                                class="btn-secondary">
+                            Editar
+                        </button>
+                        <button onclick="verHistorico({{ paciente.id }})" 
+                                class="btn-secondary">
+                            Histórico
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal de Cadastro/Edição -->
+<div id="modalPaciente" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="modalTitulo">Novo Paciente</h2>
+        <form id="formPaciente" onsubmit="salvarPaciente(event)">
+            <input type="hidden" id="pacienteId">
+            <div class="form-group">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" required>
+            </div>
+            <div class="form-group">
+                <label for="telefone">Telefone:</label>
+                <input type="tel" id="telefone" required>
+            </div>
+            <div class="form-group">
+                <label for="dataNascimento">Data de Nascimento:</label>
+                <input type="date" id="dataNascimento" required>
+            </div>
+            <div class="form-group">
+                <label for="endereco">Endereço:</label>
+                <input type="text" id="endereco" required>
+            </div>
+            <button type="submit" class="btn-primary">Salvar</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Histórico -->
+<div id="modalHistorico" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Histórico do Paciente</h2>
+        <div id="historicoConsultas">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Médico</th>
+                        <th>Especialidade</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="historicoBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function mostrarModalCadastro() {
+    document.getElementById('modalTitulo').textContent = 'Novo Paciente';
+    document.getElementById('formPaciente').reset();
+    document.getElementById('pacienteId').value = '';
+    document.getElementById('modalPaciente').style.display = 'block';
+}
+
+function editarPaciente(id) {
+    fetch(`/api/pacientes/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('modalTitulo').textContent = 'Editar Paciente';
+            document.getElementById('pacienteId').value = data.id;
+            document.getElementById('nome').value = data.nome;
+            document.getElementById('telefone').value = data.telefone;
+            document.getElementById('dataNascimento').value = data.data_nascimento;
+            document.getElementById('endereco').value = data.endereco;
+            document.getElementById('modalPaciente').style.display = 'block';
+        });
+}
+
+function verHistorico(id) {
+    fetch(`/api/pacientes/${id}/historico`)
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('historicoBody');
+            tbody.innerHTML = '';
+            
+            data.forEach(consulta => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${new Date(consulta.data_hora).toLocaleDateString()}</td>
+                    <td>${consulta.medico.nome}</td>
+                    <td>${consulta.medico.especialidade}</td>
+                    <td>${consulta.status}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            document.getElementById('modalHistorico').style.display = 'block';
+        });
+}
+
+function salvarPaciente(event) {
+    event.preventDefault();
+    const id = document.getElementById('pacienteId').value;
+    const dados = {
+        nome: document.getElementById('nome').value,
+        telefone: document.getElementById('telefone').value,
+        data_nascimento: document.getElementById('dataNascimento').value,
+        endereco: document.getElementById('endereco').value
+    };
+    
+    fetch(`/api/pacientes${id ? '/' + id : ''}`, {
+        method: id ? 'PUT' : 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dados)
+    }).then(() => {
+        window.location.reload();
+    });
+}
+
+function filtrarPacientes() {
+    const termo = document.getElementById('pesquisaPaciente')
+        .value.toLowerCase();
+    const linhas = document.querySelectorAll('.pacientes-lista tbody tr');
+    
+    linhas.forEach(linha => {
+        const nomePaciente = linha.children[0].textContent.toLowerCase();
+        linha.style.display = nomePaciente.includes(termo) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}
