@@ -239,47 +239,18 @@
 <script>
     particlesJS('particles-js', particlesConfig);
 
-    // Garantir que o jQuery está disponível
-    if (typeof $ === 'undefined') {
-        console.error('jQuery não está carregado!');
-    }
-
-    // Função para limpar modais
-    function limparModais() {
-        // Remove backdrops
-        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-        
-        // Remove classes do body
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = 'auto';
-        document.body.style.paddingRight = '0';
-        
-        // Fecha todos os modais
-        document.querySelectorAll('.modal').forEach(modal => {
-            const modalInstance = bootstrap.Modal.getInstance(modal);
-            if (modalInstance) {
-                modalInstance.hide();
-            }
-            modal.classList.remove('show');
-            modal.style.display = 'none';
-        });
-    }
-
     async function editarProntuario(id) {
         try {
-            // Limpa modais anteriores
-            limparModais();
+            Utils.limparModais();
+            Utils.toggleLoading(true);
             
-            console.log(`Editando prontuário ${id}`);
             const response = await fetch(`/api/prontuarios/${id}/detalhes`);
-            
             if (!response.ok) {
                 const error = await response.json();
                 throw new Error(error.erro || 'Erro ao carregar prontuário');
             }
             
             const prontuario = await response.json();
-            console.log('Dados do prontuário:', prontuario);
             
             // Preencher os campos do formulário de edição
             document.getElementById('diagnostico').value = prontuario.diagnostico || '';
@@ -289,29 +260,26 @@
             // Armazenar o ID do prontuário no formulário
             document.getElementById('formProntuario').dataset.prontuarioId = id;
             
-            // Mostrar o modal de edição usando Bootstrap 5
+            // Mostrar o modal de edição
             const modalEl = document.getElementById('modalEditarProntuario');
             const modal = new bootstrap.Modal(modalEl);
             modal.show();
-
-            // Remove qualquer backdrop residual
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-            document.body.style.overflow = 'auto';
-            document.body.style.paddingRight = '0';
         } catch (error) {
-            console.error('Erro:', error);
-            alert(`Erro ao carregar dados do prontuário: ${error.message}`);
+            Utils.mostrarFeedback(error.message, 'danger');
+        } finally {
+            Utils.toggleLoading(false);
         }
     }
 
-    // Função para visualizar prontuário
-    function visualizarProntuario(id) {
-        limparModais();
-        carregarDetalhesProntuario(id);
-    }
-
     async function salvarProntuario() {
+        if (!Utils.validarFormulario('formProntuario')) {
+            Utils.mostrarFeedback('Por favor, preencha todos os campos obrigatórios', 'warning');
+            return;
+        }
+
         try {
+            Utils.toggleLoading(true);
+            
             const form = document.getElementById('formProntuario');
             const id = form.dataset.prontuarioId;
             
@@ -326,40 +294,40 @@
             };
 
             await API.atualizarProntuario(id, dados);
+            Utils.mostrarFeedback('Prontuário atualizado com sucesso!');
             
-            // Limpa e fecha o modal antes de recarregar
-            limparModais();
+            Utils.limparModais();
             location.reload();
         } catch (error) {
-            console.error('Erro ao salvar:', error);
-            alert(`Erro ao salvar prontuário: ${error.message}`);
+            Utils.mostrarFeedback(error.message, 'danger');
+        } finally {
+            Utils.toggleLoading(false);
         }
     }
 
     async function imprimirProntuario(id) {
         try {
+            Utils.toggleLoading(true);
             await API.imprimirProntuario(id);
         } catch (error) {
-            console.error('Erro ao imprimir:', error);
-            alert(`Erro ao gerar impressão do prontuário: ${error.message}`);
+            Utils.mostrarFeedback('Erro ao gerar impressão do prontuário', 'danger');
+        } finally {
+            Utils.toggleLoading(false);
         }
     }
 
-    // Adiciona listeners para eventos de modal quando o documento estiver pronto
-    document.addEventListener('DOMContentLoaded', function() {
-        // Adiciona listener para todos os modais
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('hidden.bs.modal', function() {
-                limparModais();
+    // Adicionar busca com debounce
+    const inputBusca = document.querySelector('.search-box');
+    if (inputBusca) {
+        inputBusca.addEventListener('input', debounce(function(e) {
+            const termo = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.prontuario-card');
+            
+            cards.forEach(card => {
+                const texto = card.textContent.toLowerCase();
+                card.style.display = texto.includes(termo) ? '' : 'none';
             });
-        });
-
-        // Adiciona listener para botões de fechar modal
-        document.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
-            button.addEventListener('click', function() {
-                limparModais();
-            });
-        });
-    });
+        }, 300));
+    }
 </script>
 {% endblock %} 

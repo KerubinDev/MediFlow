@@ -196,29 +196,8 @@
 <script>
     particlesJS('particles-js', particlesConfig);
 
-    // Função para limpar modais
-    function limparModais() {
-        // Remove backdrops
-        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-        
-        // Remove classes do body
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = 'auto';
-        document.body.style.paddingRight = '0';
-        
-        // Fecha todos os modais
-        document.querySelectorAll('.modal').forEach(modal => {
-            const modalInstance = bootstrap.Modal.getInstance(modal);
-            if (modalInstance) {
-                modalInstance.hide();
-            }
-            modal.classList.remove('show');
-            modal.style.display = 'none';
-        });
-    }
-
     function mostrarModalPaciente() {
-        limparModais();
+        Utils.limparModais();
         document.getElementById('formPaciente').reset();
         document.getElementById('formPaciente').removeAttribute('data-paciente-id');
         document.querySelector('#modalPaciente .modal-title').textContent = 'Novo Paciente';
@@ -226,14 +205,14 @@
         const modalEl = document.getElementById('modalPaciente');
         const modal = new bootstrap.Modal(modalEl);
         modal.show();
-
-        // Remove qualquer backdrop residual
-        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-        document.body.style.overflow = 'auto';
-        document.body.style.paddingRight = '0';
     }
 
     async function salvarPaciente() {
+        if (!Utils.validarFormulario('formPaciente')) {
+            Utils.mostrarFeedback('Por favor, preencha todos os campos obrigatórios', 'warning');
+            return;
+        }
+
         const form = document.getElementById('formPaciente');
         const id = form.dataset.pacienteId;
         
@@ -245,26 +224,30 @@
         };
 
         try {
+            Utils.toggleLoading(true);
             if (id) {
                 await API.atualizarPaciente(id, dados);
+                Utils.mostrarFeedback('Paciente atualizado com sucesso!');
             } else {
                 await API.criarPaciente(dados);
+                Utils.mostrarFeedback('Paciente cadastrado com sucesso!');
             }
             location.reload();
         } catch (error) {
-            alert('Erro ao salvar paciente');
+            Utils.mostrarFeedback('Erro ao salvar paciente', 'danger');
+        } finally {
+            Utils.toggleLoading(false);
         }
     }
 
     async function editarPaciente(id) {
         try {
-            limparModais();
+            Utils.limparModais();
+            Utils.toggleLoading(true);
             
-            const response = await fetch(`/api/pacientes/${id}/detalhes`);
-            const paciente = await response.json();
+            const paciente = await API.obterPaciente(id);
             
             document.querySelector('#modalPaciente .modal-title').textContent = 'Editar Paciente';
-            
             document.getElementById('nome').value = paciente.nome;
             document.getElementById('telefone').value = paciente.telefone;
             document.getElementById('dataNascimento').value = paciente.data_nascimento;
@@ -275,31 +258,32 @@
             const modalEl = document.getElementById('modalPaciente');
             const modal = new bootstrap.Modal(modalEl);
             modal.show();
-
-            // Remove qualquer backdrop residual
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-            document.body.style.overflow = 'auto';
-            document.body.style.paddingRight = '0';
         } catch (error) {
-            console.error('Erro:', error);
-            alert('Erro ao carregar dados do paciente');
+            Utils.mostrarFeedback('Erro ao carregar dados do paciente', 'danger');
+        } finally {
+            Utils.toggleLoading(false);
         }
     }
 
     async function excluirPaciente(id) {
         if (confirm('Tem certeza que deseja excluir este paciente?')) {
             try {
+                Utils.toggleLoading(true);
                 await API.excluirPaciente(id);
+                Utils.mostrarFeedback('Paciente excluído com sucesso!');
                 location.reload();
             } catch (error) {
-                alert('Erro ao excluir paciente');
+                Utils.mostrarFeedback('Erro ao excluir paciente', 'danger');
+            } finally {
+                Utils.toggleLoading(false);
             }
         }
     }
 
     async function verHistorico(id) {
         try {
-            limparModais();
+            Utils.limparModais();
+            Utils.toggleLoading(true);
             
             const historico = await API.obterHistoricoPaciente(id);
             const historicoContent = document.getElementById('historicoContent');
@@ -323,20 +307,30 @@
             const modalEl = document.getElementById('modalHistorico');
             const modal = new bootstrap.Modal(modalEl);
             modal.show();
-
-            // Remove qualquer backdrop residual
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-            document.body.style.overflow = 'auto';
-            document.body.style.paddingRight = '0';
         } catch (error) {
-            console.error('Erro:', error);
-            alert('Erro ao carregar histórico');
+            Utils.mostrarFeedback('Erro ao carregar histórico', 'danger');
+        } finally {
+            Utils.toggleLoading(false);
         }
     }
 
     async function agendarConsulta(pacienteId) {
         // Redirecionar para a página de consultas com o paciente pré-selecionado
         window.location.href = `/consultas?paciente=${pacienteId}`;
+    }
+
+    // Adicionar busca com debounce
+    const inputBusca = document.querySelector('.search-box');
+    if (inputBusca) {
+        inputBusca.addEventListener('input', debounce(function(e) {
+            const termo = e.target.value.toLowerCase();
+            const linhas = document.querySelectorAll('tbody tr');
+            
+            linhas.forEach(linha => {
+                const texto = linha.textContent.toLowerCase();
+                linha.style.display = texto.includes(termo) ? '' : 'none';
+            });
+        }, 300));
     }
 </script>
 {% endblock %}

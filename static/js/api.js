@@ -9,21 +9,33 @@ const API = {
 
     // Consultas
     async criarConsulta(dados) {
-        const response = await fetch('/api/consultas/criar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dados)
-        });
-        return this.handleResponse(response);
+        try {
+            const response = await Utils.fetchWithRetry('/api/consultas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            Utils.mostrarFeedback('Consulta criada com sucesso!');
+            return response.json();
+        } catch (error) {
+            Utils.mostrarFeedback(error.message, 'danger');
+            throw error;
+        }
     },
 
     async atualizarConsulta(id, dados) {
-        const response = await fetch(`/api/consultas/${id}/atualizar`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dados)
-        });
-        return this.handleResponse(response);
+        try {
+            const response = await Utils.fetchWithRetry(`/api/consultas/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            Utils.mostrarFeedback('Consulta atualizada com sucesso!');
+            return response.json();
+        } catch (error) {
+            Utils.mostrarFeedback(error.message, 'danger');
+            throw error;
+        }
     },
 
     async realizarConsulta(id) {

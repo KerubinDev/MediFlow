@@ -185,32 +185,11 @@
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/api.js') }}"></script>
 <script src="{{ url_for('static', filename='js/particles-config.js') }}"></script>
-    <script>
+<script>
     particlesJS('particles-js', particlesConfig);
 
-    // Função para limpar modais
-    function limparModais() {
-        // Remove backdrops
-        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-        
-        // Remove classes do body
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = 'auto';
-        document.body.style.paddingRight = '0';
-        
-        // Fecha todos os modais
-        document.querySelectorAll('.modal').forEach(modal => {
-            const modalInstance = bootstrap.Modal.getInstance(modal);
-            if (modalInstance) {
-                modalInstance.hide();
-            }
-            modal.classList.remove('show');
-            modal.style.display = 'none';
-        });
-    }
-
     function mostrarModalConsulta() {
-        limparModais();
+        Utils.limparModais();
         document.getElementById('formConsulta').reset();
         document.getElementById('formConsulta').removeAttribute('data-consulta-id');
         document.querySelector('#modalConsulta .modal-title').textContent = 'Nova Consulta';
@@ -218,19 +197,14 @@
         const modalEl = document.getElementById('modalConsulta');
         const modal = new bootstrap.Modal(modalEl);
         modal.show();
-
-        // Remove qualquer backdrop residual
-        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-        document.body.style.overflow = 'auto';
-        document.body.style.paddingRight = '0';
     }
 
     async function editarConsulta(id) {
         try {
-            limparModais();
+            Utils.limparModais();
+            Utils.toggleLoading(true);
             
-            const response = await fetch(`/api/consultas/${id}/detalhes`);
-            const consulta = await response.json();
+            const consulta = await API.obterConsulta(id);
             
             document.querySelector('#modalConsulta .modal-title').textContent = 'Editar Consulta';
             document.getElementById('paciente').value = consulta.paciente_id;
@@ -242,18 +216,19 @@
             const modalEl = document.getElementById('modalConsulta');
             const modal = new bootstrap.Modal(modalEl);
             modal.show();
-
-            // Remove qualquer backdrop residual
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-            document.body.style.overflow = 'auto';
-            document.body.style.paddingRight = '0';
         } catch (error) {
-            console.error('Erro:', error);
-            alert('Erro ao carregar dados da consulta');
+            Utils.mostrarFeedback('Erro ao carregar dados da consulta', 'danger');
+        } finally {
+            Utils.toggleLoading(false);
         }
     }
 
     async function salvarConsulta() {
+        if (!Utils.validarFormulario('formConsulta')) {
+            Utils.mostrarFeedback('Por favor, preencha todos os campos obrigatórios', 'warning');
+            return;
+        }
+
         const form = document.getElementById('formConsulta');
         const id = form.dataset.consultaId;
         
@@ -269,19 +244,24 @@
             } else {
                 await API.criarConsulta(dados);
             }
+            Utils.limparModais();
             location.reload();
         } catch (error) {
-            alert('Erro ao salvar consulta');
+            console.error('Erro:', error);
         }
     }
 
     async function realizarConsulta(id) {
         if (confirm('Confirmar realização da consulta?')) {
             try {
+                Utils.toggleLoading(true);
                 await API.realizarConsulta(id);
+                Utils.mostrarFeedback('Consulta realizada com sucesso!');
                 location.reload();
             } catch (error) {
-                alert('Erro ao realizar consulta');
+                Utils.mostrarFeedback('Erro ao realizar consulta', 'danger');
+            } finally {
+                Utils.toggleLoading(false);
             }
         }
     }
@@ -289,10 +269,14 @@
     async function cancelarConsulta(id) {
         if (confirm('Tem certeza que deseja cancelar esta consulta?')) {
             try {
+                Utils.toggleLoading(true);
                 await API.cancelarConsulta(id);
+                Utils.mostrarFeedback('Consulta cancelada com sucesso!');
                 location.reload();
             } catch (error) {
-                alert('Erro ao cancelar consulta');
+                Utils.mostrarFeedback('Erro ao cancelar consulta', 'danger');
+            } finally {
+                Utils.toggleLoading(false);
             }
         }
     }
@@ -300,5 +284,19 @@
     function verProntuario(id) {
         window.location.href = `/prontuarios/${id}`;
     }
-    </script>
+
+    // Adicionar busca com debounce
+    const inputBusca = document.querySelector('.search-box');
+    if (inputBusca) {
+        inputBusca.addEventListener('input', debounce(function(e) {
+            const termo = e.target.value.toLowerCase();
+            const linhas = document.querySelectorAll('tbody tr');
+            
+            linhas.forEach(linha => {
+                const texto = linha.textContent.toLowerCase();
+                linha.style.display = texto.includes(termo) ? '' : 'none';
+            });
+        }, 300));
+    }
+</script>
 {% endblock %}
