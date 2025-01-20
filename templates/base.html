@@ -19,21 +19,62 @@
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 2rem;
         }
 
         .navbar-brand {
-            color: #4ECDC4;
+            color: #4ECDC4 !important;
             font-weight: bold;
             font-size: 1.5rem;
+            text-decoration: none;
+        }
+
+        .navbar-toggler {
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.7%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
         }
 
         .nav-link {
             color: rgba(255, 255, 255, 0.8) !important;
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem !important;
+            margin: 0 0.2rem;
+            border-radius: 25px;
+            text-decoration: none;
         }
 
         .nav-link:hover {
             color: #4ECDC4 !important;
+            background: rgba(78, 205, 196, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-link.active {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ECDC4 !important;
+        }
+
+        .nav-link i {
+            margin-right: 0.5rem;
+        }
+
+        /* Ajuste para responsividade */
+        @media (max-width: 991.98px) {
+            .navbar-collapse {
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(10px);
+                padding: 1rem;
+                border-radius: 10px;
+                margin-top: 1rem;
+            }
+
+            .nav-link {
+                padding: 0.75rem 1rem !important;
+                margin: 0.2rem 0;
+            }
         }
 
         /* Cards com efeito vidro */
@@ -106,64 +147,79 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('views.index') }}">MedFlow</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <a class="navbar-brand" href="{{ url_for('views.index') }}">
+                <i class="fas fa-hospital-user"></i> MedFlow
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+                    data-bs-target="#navbarNav" aria-controls="navbarNav" 
+                    aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav ms-auto">
                     {% if current_user.is_authenticated %}
                         {% if current_user.email == 'admin@medflow.com' %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('views.dashboard') }}">
+                                <a class="nav-link {% if request.endpoint == 'views.dashboard' %}active{% endif %}" 
+                                   href="{{ url_for('views.dashboard') }}">
                                     <i class="fas fa-chart-line"></i> Dashboard
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('views.usuarios') }}">
+                                <a class="nav-link {% if request.endpoint == 'views.usuarios' %}active{% endif %}" 
+                                   href="{{ url_for('views.usuarios') }}">
                                     <i class="fas fa-users"></i> Usuários
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('views.consultas') }}">
+                                <a class="nav-link {% if request.endpoint == 'views.consultas' %}active{% endif %}" 
+                                   href="{{ url_for('views.consultas') }}">
                                     <i class="fas fa-calendar-check"></i> Consultas
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('views.prontuarios') }}">
+                                <a class="nav-link {% if request.endpoint == 'views.prontuarios' %}active{% endif %}" 
+                                   href="{{ url_for('views.prontuarios') }}">
                                     <i class="fas fa-file-medical"></i> Prontuários
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('views.pacientes') }}">
+                                <a class="nav-link {% if request.endpoint == 'views.pacientes' %}active{% endif %}" 
+                                   href="{{ url_for('views.pacientes') }}">
                                     <i class="fas fa-user-injured"></i> Pacientes
                                 </a>
                             </li>
                         {% else %}
                             {% if current_user.is_admin() %}
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ url_for('views.dashboard') }}">Dashboard</a>
+                                    <a class="nav-link {% if request.endpoint == 'views.dashboard' %}active{% endif %}" 
+                                       href="{{ url_for('views.dashboard') }}">Dashboard</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ url_for('views.usuarios') }}">Usuários</a>
+                                    <a class="nav-link {% if request.endpoint == 'views.usuarios' %}active{% endif %}" 
+                                       href="{{ url_for('views.usuarios') }}">Usuários</a>
                                 </li>
                             {% endif %}
                             {% if current_user.is_medico() %}
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ url_for('views.consultas') }}">Consultas</a>
+                                    <a class="nav-link {% if request.endpoint == 'views.consultas' %}active{% endif %}" 
+                                       href="{{ url_for('views.consultas') }}">Consultas</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ url_for('views.prontuarios') }}">Prontuários</a>
+                                    <a class="nav-link {% if request.endpoint == 'views.prontuarios' %}active{% endif %}" 
+                                       href="{{ url_for('views.prontuarios') }}">Prontuários</a>
                                 </li>
                             {% endif %}
                             {% if current_user.is_recepcionista() %}
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ url_for('views.pacientes') }}">Pacientes</a>
+                                    <a class="nav-link {% if request.endpoint == 'views.pacientes' %}active{% endif %}" 
+                                       href="{{ url_for('views.pacientes') }}">Pacientes</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ url_for('views.consultas') }}">Consultas</a>
+                                    <a class="nav-link {% if request.endpoint == 'views.consultas' %}active{% endif %}" 
+                                       href="{{ url_for('views.consultas') }}">Consultas</a>
                                 </li>
                             {% endif %}
                         {% endif %}
@@ -174,7 +230,10 @@
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+                            <a class="nav-link {% if request.endpoint == 'auth.login' %}active{% endif %}" 
+                               href="{{ url_for('auth.login') }}">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
                         </li>
                     {% endif %}
                 </ul>
