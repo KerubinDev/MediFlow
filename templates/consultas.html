@@ -188,7 +188,28 @@
 <script>
     particlesJS('particles-js', particlesConfig);
 
+    async function editarConsulta(id) {
+        try {
+            const response = await fetch(`/api/consultas/${id}/detalhes`);
+            const consulta = await response.json();
+            
+            document.querySelector('#modalConsulta .modal-title').textContent = 'Editar Consulta';
+            document.getElementById('paciente').value = consulta.paciente_id;
+            document.getElementById('medico').value = consulta.medico_id;
+            document.getElementById('dataHora').value = consulta.data_hora.slice(0, 16);
+            
+            document.getElementById('formConsulta').dataset.consultaId = id;
+            
+            $('#modalConsulta').modal('show');
+        } catch (error) {
+            alert('Erro ao carregar dados da consulta');
+        }
+    }
+
     async function salvarConsulta() {
+        const form = document.getElementById('formConsulta');
+        const id = form.dataset.consultaId;
+        
         const dados = {
             paciente_id: document.getElementById('paciente').value,
             medico_id: document.getElementById('medico').value,
@@ -196,11 +217,22 @@
         };
 
         try {
-            await API.criarConsulta(dados);
+            if (id) {
+                await API.atualizarConsulta(id, dados);
+            } else {
+                await API.criarConsulta(dados);
+            }
             location.reload();
         } catch (error) {
             alert('Erro ao salvar consulta');
         }
+    }
+
+    function mostrarModalConsulta() {
+        document.getElementById('formConsulta').reset();
+        document.getElementById('formConsulta').removeAttribute('data-consulta-id');
+        document.querySelector('#modalConsulta .modal-title').textContent = 'Nova Consulta';
+        $('#modalConsulta').modal('show');
     }
 
     async function realizarConsulta(id) {

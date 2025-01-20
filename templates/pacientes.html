@@ -199,9 +199,14 @@
     function mostrarModalPaciente() {
         $('#modalPaciente').modal('show');
         document.getElementById('formPaciente').reset();
+        document.getElementById('formPaciente').removeAttribute('data-paciente-id');
+        document.querySelector('#modalPaciente .modal-title').textContent = 'Novo Paciente';
     }
 
     async function salvarPaciente() {
+        const form = document.getElementById('formPaciente');
+        const id = form.dataset.pacienteId;
+        
         const dados = {
             nome: document.getElementById('nome').value,
             telefone: document.getElementById('telefone').value,
@@ -210,7 +215,11 @@
         };
 
         try {
-            await API.criarPaciente(dados);
+            if (id) {
+                await API.atualizarPaciente(id, dados);
+            } else {
+                await API.criarPaciente(dados);
+            }
             location.reload();
         } catch (error) {
             alert('Erro ao salvar paciente');
@@ -219,13 +228,17 @@
 
     async function editarPaciente(id) {
         try {
-            const response = await fetch(`/api/pacientes/${id}`);
+            const response = await fetch(`/api/pacientes/${id}/detalhes`);
             const paciente = await response.json();
+            
+            document.querySelector('#modalPaciente .modal-title').textContent = 'Editar Paciente';
             
             document.getElementById('nome').value = paciente.nome;
             document.getElementById('telefone').value = paciente.telefone;
             document.getElementById('dataNascimento').value = paciente.data_nascimento;
             document.getElementById('endereco').value = paciente.endereco;
+            
+            document.getElementById('formPaciente').dataset.pacienteId = id;
             
             $('#modalPaciente').modal('show');
         } catch (error) {

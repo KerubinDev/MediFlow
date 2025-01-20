@@ -107,6 +107,41 @@ def criar_prontuario():
     return jsonify({'mensagem': 'Prontuário criado com sucesso'})
 
 
+@api.route('/consultas/<int:id>/detalhes', methods=['GET'])
+@login_required
+def obter_consulta_detalhes(id):
+    """Retorna detalhes de uma consulta específica"""
+    consulta = Consulta.query.get_or_404(id)
+    return jsonify({
+        'id': consulta.id,
+        'paciente_id': consulta.paciente_id,
+        'medico_id': consulta.medico_id,
+        'data_hora': consulta.data_hora.isoformat(),
+        'status': consulta.status,
+        'paciente': {
+            'nome': consulta.paciente.nome
+        },
+        'medico': {
+            'nome': consulta.medico.nome
+        }
+    })
+
+
+@api.route('/consultas/<int:id>/atualizar', methods=['PUT'])
+@login_required
+def atualizar_consulta(id):
+    """Atualiza uma consulta existente"""
+    consulta = Consulta.query.get_or_404(id)
+    dados = request.get_json()
+    
+    consulta.paciente_id = dados['paciente_id']
+    consulta.medico_id = dados['medico_id']
+    consulta.data_hora = datetime.fromisoformat(dados['data_hora'])
+    
+    db.session.commit()
+    return jsonify({'mensagem': 'Consulta atualizada com sucesso'})
+
+
 @api.route('/prontuarios/<int:id>/detalhes', methods=['GET'])
 @login_required
 @medico_required
@@ -116,11 +151,14 @@ def obter_prontuario_detalhes(id):
     return jsonify({
         'id': prontuario.id,
         'consulta': {
-            'data_hora': prontuario.consulta.data_hora,
+            'id': prontuario.consulta.id,
+            'data_hora': prontuario.consulta.data_hora.isoformat(),
             'paciente': {
+                'id': prontuario.consulta.paciente.id,
                 'nome': prontuario.consulta.paciente.nome
             },
             'medico': {
+                'id': prontuario.consulta.medico.id,
                 'nome': prontuario.consulta.medico.nome
             }
         },
@@ -133,7 +171,7 @@ def obter_prontuario_detalhes(id):
 @api.route('/prontuarios/<int:id>/atualizar', methods=['PUT'])
 @login_required
 @medico_required
-def atualizar_prontuario_dados(id):
+def atualizar_prontuario(id):
     """Atualiza um prontuário existente"""
     prontuario = Prontuario.query.get_or_404(id)
     dados = request.get_json()
@@ -151,8 +189,17 @@ def atualizar_prontuario_dados(id):
 def imprimir_prontuario(id):
     """Gera PDF do prontuário para impressão"""
     prontuario = Prontuario.query.get_or_404(id)
-    # Implementar geração de PDF
-    return jsonify({'url': f'/static/prontuarios/prontuario_{id}.pdf'})
+    
+    # TODO: Implementar geração de PDF
+    # Por enquanto, retorna os dados em JSON
+    return jsonify({
+        'paciente': prontuario.consulta.paciente.nome,
+        'medico': prontuario.consulta.medico.nome,
+        'data': prontuario.consulta.data_hora.strftime('%d/%m/%Y'),
+        'diagnostico': prontuario.diagnostico,
+        'prescricao': prontuario.prescricao,
+        'exames': prontuario.exames_solicitados
+    })
 
 
 @api.route('/pacientes/criar', methods=['POST'])
@@ -217,10 +264,9 @@ def excluir_paciente_registro(id):
 @api.route('/pacientes/<int:id>/historico', methods=['GET'])
 @login_required
 def obter_historico_paciente(id):
-    """Retorna o histórico de consultas do paciente"""
-    consultas = Consulta.query.filter_by(paciente_id=id).order_by(
-        Consulta.data_hora.desc()
-    ).all()
+    """Retorna o histórico detalhado de consultas do paciente"""
+    consultas = Consulta.query.filter_by(paciente_id=id)\
+        .order_by(Consulta.data_hora.desc()).all()
     
     return jsonify([{
         'id': c.id,
@@ -228,8 +274,13 @@ def obter_historico_paciente(id):
         'status': c.status,
         'medico': {
             'id': c.medico.id,
-            'nome': c.medico.nome
-        }
+            'nome': c.medico.nome,
+            'especialidade': c.medico.especialidade
+        },
+        'prontuario': {
+            'id': c.prontuario.id if c.prontuario else None,
+            'diagnostico': c.prontuario.diagnostico if c.prontuario else None
+        } if c.status == 'realizada' else None
     } for c in consultas])
 
 
@@ -293,49 +344,6 @@ def pacientes():
     """Página de pacientes"""
     pacientes = Paciente.query.order_by(Paciente.nome).all()
     return render_template('pacientes.html', pacientes=pacientes)
-
-@api.route('/pacientes/<int:id>/historico')
-def historico_paciente(id):
-    """Retorna o histórico de consultas do paciente"""
-    consultas = Consulta.query.filter_by(paciente_id=id)\
-        .order_by(Consulta.data_hora.desc()).all()
-    return jsonify([{
-        'data_hora': c.data_hora,
-        'medico': {
-            'nome': c.medico.nome,
-            'especialidade': c.medico.especialidade
-        },
-        'status': c.status
-    } for c in consultas])
-
-@api.route('/pacientes/<int:id>', methods=['GET', 'PUT', 'DELETE'])
-def gerenciar_paciente(id):
-    """Gerencia operações em um paciente específico"""
-    paciente = Paciente.query.get_or_404(id)
-    
-    if request.method == 'GET':
-        return jsonify({
-            'id': paciente.id,
-            'nome': paciente.nome,
-            'telefone': paciente.telefone,
-            'data_nascimento': paciente.data_nascimento.strftime('%Y-%m-%d'),
-            'endereco': paciente.endereco
-        })
-    
-    elif request.method == 'PUT':
-        dados = request.get_json()
-        paciente.nome = dados['nome']
-        paciente.telefone = dados['telefone']
-        paciente.data_nascimento = datetime.strptime(
-            dados['data_nascimento'], '%Y-%m-%d')
-        paciente.endereco = dados['endereco']
-        db.session.commit()
-        return jsonify({'mensagem': 'Paciente atualizado com sucesso'})
-    
-    elif request.method == 'DELETE':
-        db.session.delete(paciente)
-        db.session.commit()
-        return jsonify({'mensagem': 'Paciente removido com sucesso'})
 
 @views.route('/')
 def index():

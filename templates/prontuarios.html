@@ -204,12 +204,14 @@
 
     async function editarProntuario(id) {
         try {
-            const response = await fetch(`/api/prontuarios/${id}`);
+            const response = await fetch(`/api/prontuarios/${id}/detalhes`);
             const prontuario = await response.json();
             
             document.getElementById('diagnostico').value = prontuario.diagnostico;
             document.getElementById('prescricao').value = prontuario.prescricao;
             document.getElementById('exames').value = prontuario.exames_solicitados;
+            
+            document.getElementById('formProntuario').dataset.prontuarioId = id;
             
             $('#modalProntuario').modal('show');
         } catch (error) {
@@ -218,6 +220,14 @@
     }
 
     async function salvarProntuario() {
+        const form = document.getElementById('formProntuario');
+        const id = form.dataset.prontuarioId;
+        
+        if (!id) {
+            alert('ID do prontuário não encontrado');
+            return;
+        }
+
         const dados = {
             diagnostico: document.getElementById('diagnostico').value,
             prescricao: document.getElementById('prescricao').value,
@@ -225,7 +235,7 @@
         };
 
         try {
-            await API.atualizarProntuario(prontuarioId, dados);
+            await API.atualizarProntuario(id, dados);
             location.reload();
         } catch (error) {
             alert('Erro ao salvar prontuário');
@@ -236,7 +246,7 @@
         try {
             await API.imprimirProntuario(id);
         } catch (error) {
-            alert('Erro ao imprimir prontuário');
+            alert('Erro ao gerar impressão do prontuário');
         }
     }
 </script>

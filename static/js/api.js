@@ -10,7 +10,7 @@ const API = {
     },
 
     async atualizarConsulta(id, dados) {
-        const response = await fetch(`/api/consultas/${id}`, {
+        const response = await fetch(`/api/consultas/${id}/atualizar`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dados)
@@ -29,6 +29,11 @@ const API = {
         const response = await fetch(`/api/consultas/${id}/cancelar`, {
             method: 'PUT'
         });
+        return response.json();
+    },
+
+    async obterConsulta(id) {
+        const response = await fetch(`/api/consultas/${id}/detalhes`);
         return response.json();
     },
 
