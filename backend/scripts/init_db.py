@@ -3,8 +3,18 @@ from backend.database import db
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 
+def banco_vazio():
+    """Verifica se o banco de dados está vazio"""
+    return (Usuario.query.count() == 0 and 
+            Paciente.query.count() == 0 and 
+            Medico.query.count() == 0)
+
 def criar_usuarios_padrao():
     """Cria usuários padrão do sistema"""
+    # Verifica se já existe algum usuário admin
+    if Usuario.query.filter_by(email='admin@medflow.com').first():
+        return
+
     usuarios = [
         {
             'nome': 'Administrador',
@@ -27,17 +37,20 @@ def criar_usuarios_padrao():
     ]
     
     for u in usuarios:
-        if not Usuario.query.filter_by(email=u['email']).first():
-            usuario = Usuario(
-                nome=u['nome'],
-                email=u['email'],
-                tipo=u['tipo']
-            )
-            usuario.senha = u['senha']
-            db.session.add(usuario)
+        usuario = Usuario(
+            nome=u['nome'],
+            email=u['email'],
+            tipo=u['tipo']
+        )
+        usuario.senha = u['senha']
+        db.session.add(usuario)
 
 def criar_dados_exemplo():
     """Cria dados de exemplo para o sistema"""
+    # Verifica se já existem dados
+    if not banco_vazio():
+        return
+        
     # Criar médicos
     medico = Medico(
         nome='Dr. João Silva',
@@ -100,5 +113,9 @@ def criar_dados_exemplo():
 def inicializar_banco():
     """Inicializa o banco de dados com dados padrão"""
     db.create_all()
-    criar_usuarios_padrao()
-    criar_dados_exemplo() 
+    
+    # Só cria dados se o banco estiver vazio
+    if banco_vazio():
+        criar_usuarios_padrao()
+        criar_dados_exemplo()
+        db.session.commit() 
