@@ -71,20 +71,34 @@ def criar_consulta():
 @medico_required
 def realizar_consulta(id):
     """Marca uma consulta como realizada"""
-    consulta = Consulta.query.get_or_404(id)
-    consulta.status = 'realizada'
-    db.session.commit()
-    return jsonify({'mensagem': 'Consulta realizada com sucesso'})
+    try:
+        print(f"Realizando consulta {id}")
+        consulta = Consulta.query.get_or_404(id)
+        consulta.status = 'realizada'
+        db.session.commit()
+        print("Consulta realizada com sucesso")
+        return jsonify({'mensagem': 'Consulta realizada com sucesso'})
+    except Exception as e:
+        print(f"Erro ao realizar consulta: {str(e)}")
+        db.session.rollback()
+        return jsonify({'erro': str(e)}), 500
 
 
 @api.route('/consultas/<int:id>/cancelar', methods=['PUT'])
 @login_required
 def cancelar_consulta(id):
     """Cancela uma consulta"""
-    consulta = Consulta.query.get_or_404(id)
-    consulta.status = 'cancelada'
-    db.session.commit()
-    return jsonify({'mensagem': 'Consulta cancelada com sucesso'})
+    try:
+        print(f"Cancelando consulta {id}")
+        consulta = Consulta.query.get_or_404(id)
+        consulta.status = 'cancelada'
+        db.session.commit()
+        print("Consulta cancelada com sucesso")
+        return jsonify({'mensagem': 'Consulta cancelada com sucesso'})
+    except Exception as e:
+        print(f"Erro ao cancelar consulta: {str(e)}")
+        db.session.rollback()
+        return jsonify({'erro': str(e)}), 500
 
 
 @api.route('/prontuarios/criar', methods=['POST'])
@@ -198,33 +212,49 @@ def obter_prontuario_detalhes(id):
 @medico_required
 def atualizar_prontuario(id):
     """Atualiza um prontuário existente"""
-    prontuario = Prontuario.query.get_or_404(id)
-    dados = request.get_json()
-    
-    prontuario.diagnostico = dados['diagnostico']
-    prontuario.prescricao = dados['prescricao']
-    prontuario.exames_solicitados = dados['exames_solicitados']
-    
-    db.session.commit()
-    return jsonify({'mensagem': 'Prontuário atualizado com sucesso'})
+    try:
+        print(f"Atualizando prontuário {id}")
+        prontuario = Prontuario.query.get_or_404(id)
+        dados = request.get_json()
+        
+        print(f"Dados recebidos: {dados}")
+        
+        prontuario.diagnostico = dados.get('diagnostico')
+        prontuario.prescricao = dados.get('prescricao')
+        prontuario.exames_solicitados = dados.get('exames_solicitados')
+        
+        db.session.commit()
+        print("Prontuário atualizado com sucesso")
+        
+        return jsonify({'mensagem': 'Prontuário atualizado com sucesso'})
+    except Exception as e:
+        print(f"Erro ao atualizar prontuário: {str(e)}")
+        db.session.rollback()
+        return jsonify({'erro': str(e)}), 500
 
 
 @api.route('/prontuarios/<int:id>/imprimir', methods=['GET'])
 @login_required
 def imprimir_prontuario(id):
     """Gera PDF do prontuário para impressão"""
-    prontuario = Prontuario.query.get_or_404(id)
-    
-    # TODO: Implementar geração de PDF
-    # Por enquanto, retorna os dados em JSON
-    return jsonify({
-        'paciente': prontuario.consulta.paciente.nome,
-        'medico': prontuario.consulta.medico.nome,
-        'data': prontuario.consulta.data_hora.strftime('%d/%m/%Y'),
-        'diagnostico': prontuario.diagnostico,
-        'prescricao': prontuario.prescricao,
-        'exames': prontuario.exames_solicitados
-    })
+    try:
+        print(f"Gerando impressão do prontuário {id}")
+        prontuario = Prontuario.query.get_or_404(id)
+        
+        dados = {
+            'paciente': prontuario.consulta.paciente.nome,
+            'medico': prontuario.consulta.medico.nome,
+            'data': prontuario.consulta.data_hora.strftime('%d/%m/%Y'),
+            'diagnostico': prontuario.diagnostico,
+            'prescricao': prontuario.prescricao,
+            'exames': prontuario.exames_solicitados
+        }
+        
+        print(f"Dados para impressão: {dados}")
+        return jsonify(dados)
+    except Exception as e:
+        print(f"Erro ao gerar impressão: {str(e)}")
+        return jsonify({'erro': str(e)}), 500
 
 
 @api.route('/pacientes/criar', methods=['POST'])

@@ -188,9 +188,6 @@
     <script>
     particlesJS('particles-js', particlesConfig);
 
-    // Criar referência ao modal usando Bootstrap 5
-    const modalConsulta = new bootstrap.Modal(document.getElementById('modalConsulta'));
-
     async function editarConsulta(id) {
         try {
             const response = await fetch(`/api/consultas/${id}/detalhes`);
@@ -203,9 +200,8 @@
             
             document.getElementById('formConsulta').dataset.consultaId = id;
             
-            modalConsulta.show(); // Usando Bootstrap 5 nativo
+            $('#modalConsulta').modal('show');
         } catch (error) {
-            console.error('Erro:', error);
             alert('Erro ao carregar dados da consulta');
         }
     }
@@ -236,7 +232,7 @@
         document.getElementById('formConsulta').reset();
         document.getElementById('formConsulta').removeAttribute('data-consulta-id');
         document.querySelector('#modalConsulta .modal-title').textContent = 'Nova Consulta';
-        modalConsulta.show(); // Usando Bootstrap 5 nativo
+        $('#modalConsulta').modal('show');
     }
 
     async function realizarConsulta(id) {

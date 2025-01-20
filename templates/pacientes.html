@@ -196,9 +196,12 @@
 <script>
     particlesJS('particles-js', particlesConfig);
 
-    // Criar referência ao modal usando Bootstrap 5
-    const modalPaciente = new bootstrap.Modal(document.getElementById('modalPaciente'));
-    const modalHistorico = new bootstrap.Modal(document.getElementById('modalHistorico'));
+    function mostrarModalPaciente() {
+        $('#modalPaciente').modal('show');
+        document.getElementById('formPaciente').reset();
+        document.getElementById('formPaciente').removeAttribute('data-paciente-id');
+        document.querySelector('#modalPaciente .modal-title').textContent = 'Novo Paciente';
+    }
 
     async function salvarPaciente() {
         const form = document.getElementById('formPaciente');
@@ -229,6 +232,7 @@
             const paciente = await response.json();
             
             document.querySelector('#modalPaciente .modal-title').textContent = 'Editar Paciente';
+            
             document.getElementById('nome').value = paciente.nome;
             document.getElementById('telefone').value = paciente.telefone;
             document.getElementById('dataNascimento').value = paciente.data_nascimento;
@@ -236,9 +240,8 @@
             
             document.getElementById('formPaciente').dataset.pacienteId = id;
             
-            modalPaciente.show(); // Usando Bootstrap 5 nativo
+            $('#modalPaciente').modal('show');
         } catch (error) {
-            console.error('Erro:', error);
             alert('Erro ao carregar dados do paciente');
         }
     }
@@ -283,13 +286,6 @@
     async function agendarConsulta(pacienteId) {
         // Redirecionar para a página de consultas com o paciente pré-selecionado
         window.location.href = `/consultas?paciente=${pacienteId}`;
-    }
-
-    function mostrarModalPaciente() {
-        document.getElementById('formPaciente').reset();
-        document.getElementById('formPaciente').removeAttribute('data-paciente-id');
-        document.querySelector('#modalPaciente .modal-title').textContent = 'Novo Paciente';
-        modalPaciente.show(); // Usando Bootstrap 5 nativo
     }
 </script>
 {% endblock %}

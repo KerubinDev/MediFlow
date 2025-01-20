@@ -1,4 +1,12 @@
 const API = {
+    async handleResponse(response) {
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.erro || 'Erro na requisição');
+        }
+        return response.json();
+    },
+
     // Consultas
     async criarConsulta(dados) {
         const response = await fetch('/api/consultas/criar', {
@@ -6,7 +14,7 @@ const API = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dados)
         });
-        return response.json();
+        return this.handleResponse(response);
     },
 
     async atualizarConsulta(id, dados) {
@@ -15,21 +23,21 @@ const API = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dados)
         });
-        return response.json();
+        return this.handleResponse(response);
     },
 
     async realizarConsulta(id) {
         const response = await fetch(`/api/consultas/${id}/realizar`, {
             method: 'PUT'
         });
-        return response.json();
+        return this.handleResponse(response);
     },
 
     async cancelarConsulta(id) {
         const response = await fetch(`/api/consultas/${id}/cancelar`, {
             method: 'PUT'
         });
-        return response.json();
+        return this.handleResponse(response);
     },
 
     async obterConsulta(id) {
