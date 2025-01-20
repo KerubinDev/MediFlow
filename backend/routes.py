@@ -544,8 +544,7 @@ def listar_usuarios():
             'id': u.id,
             'nome': u.nome,
             'email': u.email,
-            'tipo': u.tipo,
-            'ativo': u.ativo
+            'tipo': u.tipo
         } for u in usuarios])
     except Exception as e:
         current_app.logger.error(f"Erro ao listar usuários: {str(e)}")
@@ -561,8 +560,7 @@ def obter_usuario(id):
             'id': usuario.id,
             'nome': usuario.nome,
             'email': usuario.email,
-            'tipo': usuario.tipo,
-            'ativo': usuario.ativo
+            'tipo': usuario.tipo
         })
     except Exception as e:
         current_app.logger.error(f"Erro ao obter usuário {id}: {str(e)}")
@@ -597,7 +595,7 @@ def criar_usuario():
             current_app.logger.error(f"Tipo de usuário inválido: {dados['tipo']}")
             return jsonify({'erro': 'Tipo de usuário inválido'}), 400
             
-        # Criar o usuário sem o campo ativo
+        # Criar o usuário
         usuario = Usuario(
             nome=dados['nome'],
             email=dados['email'],
