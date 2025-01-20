@@ -202,7 +202,7 @@
 </div>
 
 <!-- Modal de Edição -->
-<div class="modal fade" id="modalEditarProntuario" tabindex="-1">
+<div class="modal fade" id="modalEditarProntuario" tabindex="-1" data-bs-backdrop="false">
     <div class="modal-dialog modal-lg">
         <div class="modal-content glass-card">
             <div class="modal-header border-0">
@@ -246,18 +246,22 @@
 
     // Função para limpar modais
     function limparModais() {
-        // Remove qualquer backdrop residual
+        // Remove backdrops
         document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-        // Remove a classe 'modal-open' do body
+        
+        // Remove classes do body
         document.body.classList.remove('modal-open');
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
-        // Esconde todos os modais
+        document.body.style.overflow = 'auto';
+        document.body.style.paddingRight = '0';
+        
+        // Fecha todos os modais
         document.querySelectorAll('.modal').forEach(modal => {
             const modalInstance = bootstrap.Modal.getInstance(modal);
             if (modalInstance) {
                 modalInstance.hide();
             }
+            modal.classList.remove('show');
+            modal.style.display = 'none';
         });
     }
 
@@ -287,11 +291,13 @@
             
             // Mostrar o modal de edição usando Bootstrap 5
             const modalEl = document.getElementById('modalEditarProntuario');
-            const modal = new bootstrap.Modal(modalEl, {
-                backdrop: 'static',
-                keyboard: false
-            });
+            const modal = new bootstrap.Modal(modalEl);
             modal.show();
+
+            // Remove qualquer backdrop residual
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.style.overflow = 'auto';
+            document.body.style.paddingRight = '0';
         } catch (error) {
             console.error('Erro:', error);
             alert(`Erro ao carregar dados do prontuário: ${error.message}`);
