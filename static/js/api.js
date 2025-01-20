@@ -12,18 +12,13 @@ window.API = window.API || {
     async criarConsulta(dados) {
         try {
             console.log('Enviando dados:', dados);
-            const response = await Utils.fetchWithRetry('/api/consultas', {
+            const result = await Utils.fetchWithRetry('/api/consultas', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dados)
             });
             
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.erro || 'Erro ao criar consulta');
-            }
-            
-            const result = await response.json();
+            // O resultado já está em formato JSON
             Utils.mostrarFeedback('Consulta criada com sucesso!');
             return result;
         } catch (error) {
@@ -38,12 +33,11 @@ window.API = window.API || {
 
     async atualizarConsulta(id, dados) {
         try {
-            const response = await Utils.fetchWithRetry(`/api/consultas/${id}`, {
+            const result = await Utils.fetchWithRetry(`/api/consultas/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dados)
             });
-            const result = await response.json();
             Utils.mostrarFeedback('Consulta atualizada com sucesso!');
             return result;
         } catch (error) {
@@ -54,10 +48,9 @@ window.API = window.API || {
 
     async realizarConsulta(id) {
         try {
-            const response = await Utils.fetchWithRetry(`/api/consultas/${id}/realizar`, {
+            return await Utils.fetchWithRetry(`/api/consultas/${id}/realizar`, {
                 method: 'PUT'
             });
-            return this.handleResponse(response);
         } catch (error) {
             Utils.mostrarFeedback(error.message, 'danger');
             throw error;
@@ -66,10 +59,9 @@ window.API = window.API || {
 
     async cancelarConsulta(id) {
         try {
-            const response = await Utils.fetchWithRetry(`/api/consultas/${id}/cancelar`, {
+            return await Utils.fetchWithRetry(`/api/consultas/${id}/cancelar`, {
                 method: 'PUT'
             });
-            return this.handleResponse(response);
         } catch (error) {
             Utils.mostrarFeedback(error.message, 'danger');
             throw error;
@@ -78,8 +70,7 @@ window.API = window.API || {
 
     async obterConsulta(id) {
         try {
-            const response = await Utils.fetchWithRetry(`/api/consultas/${id}`);
-            return response.json();
+            return await Utils.fetchWithRetry(`/api/consultas/${id}`);
         } catch (error) {
             Utils.mostrarFeedback(error.message, 'danger');
             throw error;
@@ -88,34 +79,25 @@ window.API = window.API || {
 
     // Prontuários
     async criarProntuario(dados) {
-        const response = await fetch('/api/prontuarios', {
+        return await Utils.fetchWithRetry('/api/prontuarios', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dados)
         });
-        return response.json();
     },
 
     async atualizarProntuario(id, dados) {
-        const response = await fetch(`/api/prontuarios/${id}/atualizar`, {
+        return await Utils.fetchWithRetry(`/api/prontuarios/${id}/atualizar`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dados)
         });
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.erro || 'Erro ao atualizar prontuário');
-        }
-        return response.json();
     },
 
     async imprimirProntuario(id) {
-        const response = await fetch(`/api/prontuarios/${id}/imprimir`);
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.erro || 'Erro ao imprimir prontuário');
-        }
+        const result = await Utils.fetchWithRetry(`/api/prontuarios/${id}/imprimir`);
         window.open(`/api/prontuarios/${id}/imprimir`, '_blank');
+        return result;
     },
 
     // Pacientes
