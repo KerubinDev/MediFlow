@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, jsonify, request, render_template, redirect, url_for
 from flask_login import login_required, current_user
 from backend.models import (Usuario, Paciente, Medico, Consulta, Prontuario, 
     Pagamento)
@@ -307,3 +307,15 @@ def obter_prontuario(id):
         'prescricao': prontuario.prescricao,
         'exames_solicitados': prontuario.exames_solicitados
     })
+
+@views.route('/')
+def index():
+    """Redireciona para login se não estiver autenticado ou para a página apropriada se estiver"""
+    if current_user.is_authenticated:
+        if current_user.is_admin():
+            return redirect(url_for('views.dashboard'))
+        elif current_user.is_medico():
+            return redirect(url_for('views.consultas'))
+        elif current_user.is_recepcionista():
+            return redirect(url_for('views.pacientes'))
+    return redirect(url_for('auth.login'))

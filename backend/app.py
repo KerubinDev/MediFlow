@@ -7,10 +7,18 @@ from backend.routes import api, views
 from backend.auth import auth, login_manager
 from werkzeug.exceptions import HTTPException
 import json
+import os
 
 def criar_app(config_class=Config):
     """Cria e configura a aplicação Flask"""
-    app = Flask(__name__)
+    # Configura o caminho correto para templates e static
+    template_dir = os.path.abspath('templates')
+    static_dir = os.path.abspath('static')
+    
+    app = Flask(__name__, 
+                template_folder=template_dir,
+                static_folder=static_dir)
+    
     app.config.from_object(config_class)
     
     # Inicializa extensões
