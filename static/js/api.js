@@ -48,15 +48,24 @@ const API = {
     },
 
     async atualizarProntuario(id, dados) {
-        const response = await fetch(`/api/prontuarios/${id}`, {
+        const response = await fetch(`/api/prontuarios/${id}/atualizar`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dados)
         });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.erro || 'Erro ao atualizar prontuário');
+        }
         return response.json();
     },
 
     async imprimirProntuario(id) {
+        const response = await fetch(`/api/prontuarios/${id}/imprimir`);
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.erro || 'Erro ao imprimir prontuário');
+        }
         window.open(`/api/prontuarios/${id}/imprimir`, '_blank');
     },
 

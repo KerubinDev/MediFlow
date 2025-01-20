@@ -206,46 +206,52 @@
         try {
             console.log(`Editando prontuário ${id}`);
             const response = await fetch(`/api/prontuarios/${id}/detalhes`);
+            
             if (!response.ok) {
                 const error = await response.json();
                 throw new Error(error.erro || 'Erro ao carregar prontuário');
             }
+            
             const prontuario = await response.json();
             console.log('Dados do prontuário:', prontuario);
             
-            document.getElementById('diagnostico').value = prontuario.diagnostico;
-            document.getElementById('prescricao').value = prontuario.prescricao;
-            document.getElementById('exames').value = prontuario.exames_solicitados;
+            if (!prontuario.diagnostico || !prontuario.prescricao || !prontuario.exames_solicitados) {
+                console.warn('Dados incompletos do prontuário:', prontuario);
+            }
+            
+            document.getElementById('diagnostico').value = prontuario.diagnostico || '';
+            document.getElementById('prescricao').value = prontuario.prescricao || '';
+            document.getElementById('exames').value = prontuario.exames_solicitados || '';
             
             document.getElementById('formProntuario').dataset.prontuarioId = id;
             
             $('#modalProntuario').modal('show');
         } catch (error) {
             console.error('Erro:', error);
-            alert('Erro ao carregar dados do prontuário');
+            alert(`Erro ao carregar dados do prontuário: ${error.message}`);
         }
     }
 
     async function salvarProntuario() {
-        const form = document.getElementById('formProntuario');
-        const id = form.dataset.prontuarioId;
-        
-        if (!id) {
-            alert('ID do prontuário não encontrado');
-            return;
-        }
-
-        const dados = {
-            diagnostico: document.getElementById('diagnostico').value,
-            prescricao: document.getElementById('prescricao').value,
-            exames_solicitados: document.getElementById('exames').value
-        };
-
         try {
+            const form = document.getElementById('formProntuario');
+            const id = form.dataset.prontuarioId;
+            
+            if (!id) {
+                throw new Error('ID do prontuário não encontrado');
+            }
+
+            const dados = {
+                diagnostico: document.getElementById('diagnostico').value,
+                prescricao: document.getElementById('prescricao').value,
+                exames_solicitados: document.getElementById('exames').value
+            };
+
             await API.atualizarProntuario(id, dados);
             location.reload();
         } catch (error) {
-            alert('Erro ao salvar prontuário');
+            console.error('Erro ao salvar:', error);
+            alert(`Erro ao salvar prontuário: ${error.message}`);
         }
     }
 
@@ -253,7 +259,8 @@
         try {
             await API.imprimirProntuario(id);
         } catch (error) {
-            alert('Erro ao gerar impressão do prontuário');
+            console.error('Erro ao imprimir:', error);
+            alert(`Erro ao gerar impressão do prontuário: ${error.message}`);
         }
     }
 </script>
