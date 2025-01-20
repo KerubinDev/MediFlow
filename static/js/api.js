@@ -48,10 +48,18 @@ window.API = window.API || {
 
     async realizarConsulta(id) {
         try {
-            return await Utils.fetchWithRetry(`/api/consultas/${id}/realizar`, {
-                method: 'PUT'
+            console.log(`Realizando consulta ${id}`);
+            const result = await Utils.fetchWithRetry(`/api/consultas/${id}/realizar`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({}) // Enviar um objeto vazio, mas necessário para o PUT
             });
+            Utils.mostrarFeedback('Consulta realizada com sucesso!');
+            return result;
         } catch (error) {
+            console.error('Erro ao realizar consulta:', error);
             Utils.mostrarFeedback(error.message, 'danger');
             throw error;
         }

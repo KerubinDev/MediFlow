@@ -164,10 +164,29 @@ def atualizar_consulta(id):
 @login_required
 @medico_required
 def realizar_consulta(id):
-    consulta = Consulta.query.get_or_404(id)
-    consulta.status = 'realizada'
-    db.session.commit()
-    return jsonify({'mensagem': 'Consulta realizada com sucesso'})
+    try:
+        current_app.logger.debug(f"Realizando consulta {id}")
+        
+        consulta = Consulta.query.get(id)
+        if not consulta:
+            current_app.logger.error(f"Consulta {id} não encontrada")
+            return jsonify({'erro': f'Consulta {id} não encontrada'}), 404
+            
+        if consulta.status == 'realizada':
+            return jsonify({'erro': 'Consulta já foi realizada'}), 400
+            
+        if consulta.status == 'cancelada':
+            return jsonify({'erro': 'Não é possível realizar uma consulta cancelada'}), 400
+            
+        consulta.status = 'realizada'
+        db.session.commit()
+        
+        current_app.logger.info(f"Consulta {id} realizada com sucesso")
+        return jsonify({'mensagem': 'Consulta realizada com sucesso'})
+    except Exception as e:
+        current_app.logger.error(f"Erro ao realizar consulta {id}: {str(e)}")
+        db.session.rollback()
+        return jsonify({'erro': str(e)}), 500
 
 @api.route('/consultas/<int:id>/cancelar', methods=['PUT'])
 @login_required

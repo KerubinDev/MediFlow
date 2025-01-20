@@ -96,13 +96,18 @@ const Utils = {
             
             options.signal = controller.signal;
             
-            // Adicionar headers apenas se não for GET
-            if (options.method !== 'GET') {
+            // Configurar headers apropriados baseado no método
+            if (options.method === 'PUT' || options.method === 'POST') {
                 options.headers = {
                     ...options.headers,
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 };
+                
+                // Garantir que body seja uma string JSON válida
+                if (!options.body) {
+                    options.body = JSON.stringify({});
+                }
             }
             
             const response = await fetch(url, options);
@@ -110,13 +115,12 @@ const Utils = {
             
             console.log(`Status da resposta: ${response.status}`);
             
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.erro || 'Erro na requisição');
-            }
-            
             const responseData = await response.json();
             console.log('Resposta:', responseData);
+            
+            if (!response.ok) {
+                throw new Error(responseData.erro || 'Erro na requisição');
+            }
             
             return responseData;
         } catch (error) {
@@ -127,7 +131,6 @@ const Utils = {
                 return Utils.fetchWithRetry(url, options, retries - 1);
             }
             
-            // Se chegou aqui, todas as tentativas falharam
             const errorMessage = error.message || 'Erro ao processar requisição';
             Utils.mostrarFeedback(errorMessage, 'danger');
             throw error;
