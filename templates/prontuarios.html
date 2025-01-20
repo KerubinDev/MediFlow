@@ -165,7 +165,7 @@
 </div>
 
 <!-- Modal de Visualização -->
-<div class="modal fade" id="modalVisualizarProntuario" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalVisualizarProntuario" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-lg">
         <div class="modal-content glass-card">
             <div class="modal-header">
@@ -202,12 +202,12 @@
 </div>
 
 <!-- Modal de Edição -->
-<div class="modal fade" id="modalEditarProntuario" tabindex="-1">
+<div class="modal fade" id="modalEditarProntuario" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-lg">
         <div class="modal-content glass-card">
             <div class="modal-header border-0">
                 <h5 class="modal-title text-gradient">Editar Prontuário</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
                 <form id="formProntuario">
@@ -247,11 +247,18 @@
     // Função para limpar modais
     function limparModais() {
         // Remove qualquer backdrop residual
-        $('.modal-backdrop').remove();
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
         // Remove a classe 'modal-open' do body
-        $('body').removeClass('modal-open').css('overflow', '');
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
         // Esconde todos os modais
-        $('.modal').modal('hide');
+        document.querySelectorAll('.modal').forEach(modal => {
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        });
     }
 
     async function editarProntuario(id) {
@@ -278,11 +285,13 @@
             // Armazenar o ID do prontuário no formulário
             document.getElementById('formProntuario').dataset.prontuarioId = id;
             
-            // Mostrar o modal de edição
-            $('#modalEditarProntuario').modal({
+            // Mostrar o modal de edição usando Bootstrap 5
+            const modalEl = document.getElementById('modalEditarProntuario');
+            const modal = new bootstrap.Modal(modalEl, {
                 backdrop: 'static',
                 keyboard: false
-            }).modal('show');
+            });
+            modal.show();
         } catch (error) {
             console.error('Erro:', error);
             alert(`Erro ao carregar dados do prontuário: ${error.message}`);
@@ -330,11 +339,20 @@
         }
     }
 
-    // Adiciona listeners para eventos de modal
-    $(document).ready(function() {
-        // Limpa modais quando qualquer modal for fechado
-        $('.modal').on('hidden.bs.modal', function() {
-            limparModais();
+    // Adiciona listeners para eventos de modal quando o documento estiver pronto
+    document.addEventListener('DOMContentLoaded', function() {
+        // Adiciona listener para todos os modais
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('hidden.bs.modal', function() {
+                limparModais();
+            });
+        });
+
+        // Adiciona listener para botões de fechar modal
+        document.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
+            button.addEventListener('click', function() {
+                limparModais();
+            });
         });
     });
 </script>
