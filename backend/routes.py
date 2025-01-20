@@ -561,14 +561,24 @@ def criar_usuario():
         
         # Validar dados obrigatórios
         campos_obrigatorios = ['nome', 'email', 'senha', 'tipo']
-        if not all(campo in dados for campo in campos_obrigatorios):
+        campos_faltando = [campo for campo in campos_obrigatorios if campo not in dados]
+        if campos_faltando:
+            current_app.logger.error(f"Campos obrigatórios faltando: {campos_faltando}")
             return jsonify({
-                'erro': 'Dados incompletos. Todos os campos são obrigatórios.'
+                'erro': f'Campos obrigatórios faltando: {", ".join(campos_faltando)}'
             }), 400
             
         # Verificar se email já existe
-        if Usuario.query.filter_by(email=dados['email']).first():
+        usuario_existente = Usuario.query.filter_by(email=dados['email']).first()
+        if usuario_existente:
+            current_app.logger.error(f"Email já cadastrado: {dados['email']}")
             return jsonify({'erro': 'Email já cadastrado'}), 400
+            
+        # Validar tipo de usuário
+        tipos_validos = ['admin', 'medico', 'recepcionista']
+        if dados['tipo'] not in tipos_validos:
+            current_app.logger.error(f"Tipo de usuário inválido: {dados['tipo']}")
+            return jsonify({'erro': 'Tipo de usuário inválido'}), 400
             
         usuario = Usuario(
             nome=dados['nome'],
@@ -578,6 +588,7 @@ def criar_usuario():
         )
         usuario.set_password(dados['senha'])
         
+        current_app.logger.debug("Adicionando usuário ao banco de dados")
         db.session.add(usuario)
         db.session.commit()
         
@@ -615,3 +626,12 @@ def atualizar_usuario(id):
         current_app.logger.error(f"Erro ao atualizar usuário {id}: {str(e)}")
         db.session.rollback()
         return jsonify({'erro': str(e)}), 500
+
+@api.errorhandler(Exception)
+def handle_error(error):
+    current_app.logger.error(f"Erro não tratado: {str(error)}")
+    db.session.rollback()
+    return jsonify({
+        'erro': 'Erro interno do servidor',
+        'detalhes': str(error)
+    }), 500
