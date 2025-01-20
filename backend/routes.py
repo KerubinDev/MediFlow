@@ -580,13 +580,13 @@ def criar_usuario():
             current_app.logger.error(f"Tipo de usuário inválido: {dados['tipo']}")
             return jsonify({'erro': 'Tipo de usuário inválido'}), 400
             
+        # Criar o usuário sem o campo ativo
         usuario = Usuario(
             nome=dados['nome'],
             email=dados['email'],
-            tipo=dados['tipo'],
-            ativo=True
+            tipo=dados['tipo']
         )
-        usuario.set_password(dados['senha'])
+        usuario.set_senha(dados['senha'])
         
         current_app.logger.debug("Adicionando usuário ao banco de dados")
         db.session.add(usuario)
