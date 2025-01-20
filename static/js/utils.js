@@ -120,6 +120,10 @@ const Utils = {
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 return Utils.fetchWithRetry(url, options, retries - 1);
             }
+            
+            // Se chegou aqui, todas as tentativas falharam
+            const errorMessage = error.message || 'Erro ao processar requisição';
+            Utils.mostrarFeedback(errorMessage, 'danger');
             throw error;
         } finally {
             Utils.toggleLoading(false);

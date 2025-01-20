@@ -70,9 +70,18 @@ window.API = window.API || {
 
     async obterConsulta(id) {
         try {
-            return await Utils.fetchWithRetry(`/api/consultas/${id}`);
+            console.log(`Obtendo consulta ${id}`);
+            const result = await Utils.fetchWithRetry(`/api/consultas/${id}`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            });
+            return result;
         } catch (error) {
-            Utils.mostrarFeedback(error.message, 'danger');
+            console.error('Erro ao obter consulta:', error);
+            Utils.mostrarFeedback(
+                'Erro ao carregar dados da consulta. Tente novamente.',
+                'danger'
+            );
             throw error;
         }
     },

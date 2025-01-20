@@ -111,14 +111,38 @@ def criar_consulta():
 @api.route('/consultas/<int:id>', methods=['GET'])
 @login_required
 def obter_consulta(id):
-    consulta = Consulta.query.get_or_404(id)
-    return jsonify({
-        'id': consulta.id,
-        'paciente_id': consulta.paciente_id,
-        'medico_id': consulta.medico_id,
-        'data_hora': consulta.data_hora.isoformat(),
-        'status': consulta.status
-    })
+    try:
+        if not id:
+            return jsonify({'erro': 'ID da consulta não fornecido'}), 400
+            
+        consulta = Consulta.query.get(id)
+        if not consulta:
+            return jsonify({'erro': f'Consulta {id} não encontrada'}), 404
+            
+        if not consulta.paciente:
+            return jsonify({'erro': 'Paciente não encontrado para esta consulta'}), 400
+            
+        if not consulta.medico:
+            return jsonify({'erro': 'Médico não encontrado para esta consulta'}), 400
+            
+        return jsonify({
+            'id': consulta.id,
+            'paciente_id': consulta.paciente_id,
+            'medico_id': consulta.medico_id,
+            'data_hora': consulta.data_hora.isoformat(),
+            'status': consulta.status,
+            'paciente': {
+                'id': consulta.paciente.id,
+                'nome': consulta.paciente.nome
+            },
+            'medico': {
+                'id': consulta.medico.id,
+                'nome': consulta.medico.nome
+            }
+        })
+    except Exception as e:
+        current_app.logger.error(f"Erro ao obter consulta {id}: {str(e)}")
+        return jsonify({'erro': f'Erro ao obter consulta: {str(e)}'}), 500
 
 @api.route('/consultas/<int:id>', methods=['PUT'])
 @login_required
