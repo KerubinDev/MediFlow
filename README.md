@@ -1,160 +1,192 @@
-# MediFlow
-
 <div align="center">
-  <h1>MediFlow</h1>
-  <p>Sistema de Gestão para Clínicas Médicas</p>
-  <p>
-    <img src="https://img.shields.io/badge/Python-3.8+-blue.svg" alt="Python Version">
-    <img src="https://img.shields.io/badge/License-GPL%20v3-blue.svg" alt="License">
-    <img src="https://img.shields.io/badge/Flask-2.0+-green.svg" alt="Flask Version">
-  </p>
+
+<!-- Título animado em ASCII art -->
+```
+███╗   ███╗███████╗██████╗ ██╗███████╗██╗      ██████╗ ██╗    ██╗
+████╗ ████║██╔════╝██╔══██╗██║██╔════╝██║     ██╔═══██╗██║    ██║
+██╔████╔██║█████╗  ██║  ██║██║█████╗  ██║     ██║   ██║██║ █╗ ██║
+██║╚██╔╝██║██╔══╝  ██║  ██║██║██╔══╝  ██║     ██║   ██║██║███╗██║
+██║ ╚═╝ ██║███████╗██████╔╝██║██║     ███████╗╚██████╔╝╚███╔███╔╝
+╚═╝     ╚═╝╚══════╝╚═════╝ ╚═╝╚═╝     ╚══════╝ ╚═════╝  ╚══╝╚══╝ 
+```
+
+<h3>🏥 Sistema Inteligente de Gestão para Clínicas Médicas</h3>
+
+<!-- Badges modernos e elegantes -->
+<div align="center">
+  
+[![Tecnologia](https://img.shields.io/badge/Tecnologia-Python%20&%20Flask-4B8BBE?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Banco de Dados](https://img.shields.io/badge/Database-SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Licença](https://img.shields.io/badge/Licença-GPL%20v3-blue.svg?style=for-the-badge&logo=gnu&logoColor=white)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Em%20Desenvolvimento-green.svg?style=for-the-badge&logo=git&logoColor=white)](https://github.com/KerubinDev/MediFlow)
+
 </div>
 
-## 📋 Sobre
+<!-- Menu de navegação estilizado -->
+<p align="center">
+  <a href="#-visão-geral">📋 Visão Geral</a> • 
+  <a href="#-recursos">🌟 Recursos</a> • 
+  <a href="#-tecnologias">🛠️ Tecnologias</a> • 
+  <a href="#-começando">🚀 Começando</a> • 
+  <a href="#-demonstração">🎥 Demonstração</a>
+</p>
 
-MediFlow é um sistema web completo para gestão de clínicas médicas, desenvolvido com Flask e SQLAlchemy. O sistema oferece funcionalidades para gerenciamento de consultas, prontuários eletrônicos, pacientes e usuários, com foco em usabilidade e segurança.
+</div>
 
-## 🚀 Funcionalidades
+<!-- Seção de Visão Geral com Design Moderno -->
+## 📋 Visão Geral
 
-- **Gestão de Consultas**
-  - Agendamento e reagendamento
-  - Confirmação de presença
-  - Cancelamento
-  - Histórico completo
-  - Status de consulta em tempo real
+<div align="center">
 
-- **Prontuário Eletrônico**
-  - Registro de diagnósticos
-  - Prescrições médicas
-  - Solicitação de exames
-  - Impressão de prontuários
-  - Histórico médico completo
+```mermaid
+graph TD
+    A[MediFlow] --> B[Gestão de Consultas]
+    A --> C[Prontuário Eletrônico]
+    A --> D[Gestão de Pacientes]
+    A --> E[Controle de Usuários]
+    
+    B --> F[Agendamento]
+    B --> G[Confirmações]
+    
+    C --> H[Diagnósticos]
+    C --> I[Prescrições]
+    
+    D --> J[Cadastros]
+    D --> K[Histórico]
+    
+    E --> L[Permissões]
+    E --> M[Segurança]
+```
 
-- **Gestão de Pacientes**
-  - Cadastro completo
-  - Histórico médico
-  - Busca avançada
-  - Atualização de dados
-  - Visualização de consultas anteriores
+</div>
 
-- **Controle de Usuários**
-  - Níveis de acesso (Admin, Médico, Recepcionista)
-  - Gerenciamento de permissões
-  - Segurança e autenticação
-  - Logs de atividades
+O **MediFlow** representa uma revolução na gestão de clínicas médicas, combinando eficiência operacional com uma experiência excepcional para usuários e pacientes.
 
-## 🛠️ Tecnologias
+<!-- Cards de Recursos -->
+## 🌟 Recursos
 
-- **Backend**
-  - Python 3.8+
-  - Flask (Framework Web)
-  - SQLAlchemy (ORM)
-  - Flask-Login (Autenticação)
-  - Werkzeug (Segurança)
+<table align="center">
+  <tr>
+    <td align="center">
+      <img width="64" src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Python-Dark.svg" alt="Gestão de Consultas"/>
+      <br/><strong>Gestão de Consultas</strong>
+      <br/>Sistema inteligente de agendamento
+    </td>
+    <td align="center">
+      <img width="64" src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Flask-Dark.svg" alt="Prontuários"/>
+      <br/><strong>Prontuários Digitais</strong>
+      <br/>Documentação clínica completa
+    </td>
+    <td align="center">
+      <img width="64" src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/SQLite.svg" alt="Gestão de Pacientes"/>
+      <br/><strong>Gestão de Pacientes</strong>
+      <br/>Perfis detalhados e histórico
+    </td>
+  </tr>
+</table>
 
-- **Frontend**
-  - Bootstrap 5 (Framework CSS)
-  - JavaScript
-  - HTML5/CSS3
-  - Fetch API
+<!-- Seção de Tecnologias com Visual Diferenciado -->
+## 🛠️ Stack Tecnológica
 
-- **Banco de Dados**
-  - SQLite
+<div align="center">
 
-## ⚙️ Instalação
+| Back-end | Front-end | Database | Tools |
+|----------|-----------|----------|--------|
+| ![Python](https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Python-Dark.svg) | ![HTML5](https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/HTML.svg) | ![SQLite](https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/SQLite.svg) | ![Git](https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Git.svg) |
+| ![Flask](https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Flask-Dark.svg) | ![CSS3](https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/CSS.svg) | ![SQLAlchemy](https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/MySQL-Dark.svg) | ![VSCode](https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/VSCode-Dark.svg) |
+| ![JWT](https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/JWT-Dark.svg) | ![JavaScript](https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/JavaScript.svg) | | ![Docker](https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Docker.svg) |
 
-1. Clone o repositório:
+</div>
+
+<!-- Seção de Instalação com Destaque -->
+## 🚀 Começando
+
 ```bash
+# Clone este repositório
 git clone https://github.com/KerubinDev/MediFlow.git
+
+# Navegue até o diretório
 cd MediFlow
-```
 
-2. Crie um ambiente virtual:
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-```
-
-3. Instale as dependências:
-```bash
+# Instale as dependências
 pip install -r requirements.txt
-```
 
-4. Configure as variáveis de ambiente:
-```bash
-cp .env.example .env
-# Edite o arquivo .env com suas configurações
-```
-
-5. Execute o sistema:
-```bash
+# Inicie o servidor
 python run.py
 ```
 
-## 🔑 Credenciais Padrão
+<!-- Seção de Credenciais Estilizada -->
+## 🔐 Credenciais de Acesso
 
-Após iniciar o sistema, você terá acesso aos seguintes usuários:
+<div align="center">
 
-**Admin:**
-- Email: admin@medflow.com
-- Senha: admin123
+| Perfil | Credenciais | Permissões |
+|--------|-------------|------------|
+| 👑 **Admin** | admin@medflow.com<br>admin123 | Acesso total ao sistema |
+| 👨‍⚕️ **Médico** | medico@medflow.com<br>medico123 | Prontuários e consultas |
+| 💼 **Recepção** | recepcao@medflow.com<br>recepcao123 | Agendamentos |
 
-**Médico:**
-- Email: medico@medflow.com
-- Senha: medico123
+</div>
 
-**Recepcionista:**
-- Email: recepcao@medflow.com
-- Senha: recepcao123
+<!-- Estrutura do Projeto com Ícones -->
+## 📂 Estrutura do Projeto
 
-## 🔒 Variáveis de Ambiente
-
-Copie o arquivo `.env.example` para `.env` e configure as seguintes variáveis:
-
-- `FLASK_APP`: Nome do aplicativo Flask
-- `FLASK_ENV`: Ambiente (development/production)
-- `SECRET_KEY`: Chave secreta para sessões
-- `DATABASE_URL`: URL do banco de dados
-
-## 📁 Estrutura do Projeto
-
-```
-mediflow/
-├── backend/
-│   ├── __init__.py
-│   ├── models.py
-│   ├── routes.py
-│   └── app.py
-├── static/
-│   ├── css/
-│   └── js/
-├── templates/
-├── .env
-├── .gitignore
-├── requirements.txt
-└── run.py
+```plaintext
+🏥 MediFlow/
+├── 📱 frontend/
+│   ├── 🎨 assets/
+│   ├── 📄 templates/
+│   └── 🎯 static/
+├── ⚙️ backend/
+│   ├── 📊 models/
+│   ├── 🛣️ routes/
+│   └── 🔧 utils/
+├── 🔒 config/
+└── 📚 docs/
 ```
 
-## 👥 Contribuição
+<!-- Seção de Contribuição com Workflow -->
+## 🤝 Como Contribuir
 
-1. Faça um Fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
+```mermaid
+gitGraph
+   commit
+   commit
+   branch feature
+   checkout feature
+   commit
+   commit
+   checkout main
+   merge feature
+   commit
+   commit
+```
+
+1. Fork o projeto
+2. Crie sua Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add: nova funcionalidade'`)
+4. Push para a Branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
-## 📝 Licença
-
-Este projeto está sob a licença GNU GPL v3. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
+<!-- Seção do Autor com Cartão de Perfil -->
 ## 👨‍💻 Autor
 
-**Kelvin Moraes**
-- Email: kelvin.moraes117@gmail.com
-- GitHub: [@KerubinDev](https://github.com/KerubinDev)
+<div align="center">
+  <img width="200" height="200" src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Github-Dark.svg" alt="Kelvin Moraes" style="border-radius: 50%;">
+  <h3>Kelvin Moraes</h3>
+  <p>Full Stack Developer</p>
+  
+[![GitHub](https://img.shields.io/badge/GitHub-KerubinDev-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/KerubinDev)
+[![Email](https://img.shields.io/badge/Email-kelvin.moraes117@gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:kelvin.moraes117@gmail.com)
+</div>
 
 ---
+
 <div align="center">
-  <sub>Built with ❤️ by Kelvin Moraes</sub>
+  
+  **[⬆ Voltar ao topo](#mediflow)**
+
+  <sub>Desenvolvido com 💙 por Kelvin Moraes</sub>
+  
+  [![Made with Flask](https://img.shields.io/badge/Made%20with-Flask-000000?style=for-the-badge&logo=flask)](https://flask.palletsprojects.com/)
 </div>
