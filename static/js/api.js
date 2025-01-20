@@ -1,4 +1,5 @@
-const API = {
+// Verificar se API já existe para evitar redeclaração
+window.API = window.API || {
     async handleResponse(response) {
         if (!response.ok) {
             const error = await response.json();
@@ -10,7 +11,7 @@ const API = {
     // Consultas
     async criarConsulta(dados) {
         try {
-            const response = await Utils.fetchWithRetry('/api/consultas', {
+            const response = await Utils.fetchWithRetry('/api/consulta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dados)
@@ -25,7 +26,7 @@ const API = {
 
     async atualizarConsulta(id, dados) {
         try {
-            const response = await Utils.fetchWithRetry(`/api/consultas/${id}`, {
+            const response = await Utils.fetchWithRetry(`/api/consulta/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dados)
@@ -39,21 +40,21 @@ const API = {
     },
 
     async realizarConsulta(id) {
-        const response = await fetch(`/api/consultas/${id}/realizar`, {
+        const response = await fetch(`/api/consulta/${id}/realizar`, {
             method: 'PUT'
         });
         return this.handleResponse(response);
     },
 
     async cancelarConsulta(id) {
-        const response = await fetch(`/api/consultas/${id}/cancelar`, {
+        const response = await fetch(`/api/consulta/${id}/cancelar`, {
             method: 'PUT'
         });
         return this.handleResponse(response);
     },
 
     async obterConsulta(id) {
-        const response = await fetch(`/api/consultas/${id}/detalhes`);
+        const response = await fetch(`/api/consulta/${id}`);
         return response.json();
     },
 

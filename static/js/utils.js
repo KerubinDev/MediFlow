@@ -93,11 +93,15 @@ const Utils = {
             const response = await fetch(url, options);
             clearTimeout(timeoutId);
             
-            if (!response.ok) throw new Error(await response.text());
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(JSON.stringify(errorData));
+            }
             
             return response;
         } catch (error) {
             if (retries > 0) {
+                console.warn(`Tentativa falhou, tentando novamente... (${retries} tentativas restantes)`);
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 return Utils.fetchWithRetry(url, options, retries - 1);
             }
