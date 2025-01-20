@@ -122,9 +122,6 @@ def inicializar_banco():
     """
     Inicializa o banco de dados com usuários padrão para teste.
     """
-    # Limpa o banco existente
-    db.drop_all()
-    
     # Cria as tabelas se não existirem
     db.create_all()
 
@@ -134,19 +131,19 @@ def inicializar_banco():
             'nome': 'Administrador',
             'email': 'admin@medflow.com',
             'senha': 'admin123',
-            'cargo': 'admin'
+            'tipo': 'admin'
         },
         {
             'nome': 'Dr. Silva',
             'email': 'medico@medflow.com',
             'senha': 'medico123',
-            'cargo': 'medico'
+            'tipo': 'medico'
         },
         {
             'nome': 'Maria Recepção',
             'email': 'recepcao@medflow.com',
             'senha': 'recepcao123',
-            'cargo': 'recepcionista'
+            'tipo': 'recepcionista'
         }
     ]
 
@@ -164,7 +161,7 @@ def inicializar_banco():
                     usuario['senha'], 
                     method='scrypt'
                 ),
-                cargo=usuario['cargo']
+                tipo=usuario['tipo']
             )
             db.session.add(novo_usuario)
     
