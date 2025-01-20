@@ -119,13 +119,62 @@ def criar_dados_exemplo():
         raise
 
 def inicializar_banco():
-    """Inicializa o banco de dados com dados de exemplo"""
-    print("Iniciando inicialização do banco...")
+    """
+    Inicializa o banco de dados com usuários padrão para teste.
+    """
+    # Limpa o banco existente
     db.drop_all()
-    print("Tabelas antigas removidas")
+    
+    # Cria as tabelas se não existirem
     db.create_all()
-    print("Novas tabelas criadas")
-    criar_dados_exemplo()
+
+    # Lista de usuários padrão
+    usuarios_padrao = [
+        {
+            'nome': 'Administrador',
+            'email': 'admin@medflow.com',
+            'senha': 'admin123',
+            'cargo': 'admin'
+        },
+        {
+            'nome': 'Dr. Silva',
+            'email': 'medico@medflow.com',
+            'senha': 'medico123',
+            'cargo': 'medico'
+        },
+        {
+            'nome': 'Maria Recepção',
+            'email': 'recepcao@medflow.com',
+            'senha': 'recepcao123',
+            'cargo': 'recepcionista'
+        }
+    ]
+
+    # Adiciona cada usuário se ele ainda não existir
+    for usuario in usuarios_padrao:
+        usuario_existente = Usuario.query.filter_by(
+            email=usuario['email']
+        ).first()
+        
+        if not usuario_existente:
+            novo_usuario = Usuario(
+                nome=usuario['nome'],
+                email=usuario['email'],
+                senha=generate_password_hash(
+                    usuario['senha'], 
+                    method='scrypt'
+                ),
+                cargo=usuario['cargo']
+            )
+            db.session.add(novo_usuario)
+    
+    # Commit das alterações
+    try:
+        db.session.commit()
+        print("Banco de dados inicializado com sucesso!")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao inicializar o banco de dados: {str(e)}")
 
 if __name__ == '__main__':
     inicializar_banco() 
