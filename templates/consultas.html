@@ -34,16 +34,15 @@
         box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
     }
 
-    .status-agendada {
-        background: linear-gradient(45deg, #4ECDC4, #45B7AF);
-    }
+    .status-agendada { background: linear-gradient(45deg, #4ECDC4, #45B7AF); }
+    .status-realizada { background: linear-gradient(45deg, #2ECC71, #27AE60); }
+    .status-cancelada { background: linear-gradient(45deg, #E74C3C, #C0392B); }
 
-    .status-realizada {
-        background: linear-gradient(45deg, #2ECC71, #27AE60);
-    }
-
-    .status-cancelada {
-        background: linear-gradient(45deg, #E74C3C, #C0392B);
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        color: white;
+        font-size: 0.85rem;
     }
 
     .form-control {
@@ -66,6 +65,14 @@
     .modal-content {
         background: rgba(44, 62, 80, 0.95);
         color: white;
+    }
+
+    .btn-action {
+        margin: 0 0.2rem;
+    }
+
+    .btn-action i {
+        margin-right: 0.3rem;
     }
 </style>
 {% endblock %}
@@ -110,15 +117,20 @@
                             </span>
                         </td>
                         <td>
-                            <button class="btn-neon btn-sm" onclick="editarConsulta({{ consulta.id }})">
+                            <button class="btn-neon btn-sm btn-action" onclick="editarConsulta({{ consulta.id }})">
                                 <i class="fas fa-edit"></i>
                             </button>
                             {% if consulta.status == 'agendada' %}
-                            <button class="btn-neon btn-sm" onclick="realizarConsulta({{ consulta.id }})">
+                            <button class="btn-neon btn-sm btn-action" onclick="realizarConsulta({{ consulta.id }})">
                                 <i class="fas fa-check"></i>
                             </button>
-                            <button class="btn-danger btn-sm" onclick="cancelarConsulta({{ consulta.id }})">
+                            <button class="btn-danger btn-sm btn-action" onclick="cancelarConsulta({{ consulta.id }})">
                                 <i class="fas fa-times"></i>
+                            </button>
+                            {% endif %}
+                            {% if consulta.status == 'realizada' %}
+                            <button class="btn-neon btn-sm btn-action" onclick="verProntuario({{ consulta.id }})">
+                                <i class="fas fa-file-medical"></i>
                             </button>
                             {% endif %}
                         </td>
@@ -193,5 +205,34 @@
             }
         }
     });
+
+    // Funções do CRUD
+    function mostrarModalConsulta() {
+        $('#modalConsulta').modal('show');
+    }
+
+    function editarConsulta(id) {
+        // Implementar edição
+    }
+
+    function realizarConsulta(id) {
+        if (confirm('Confirmar realização da consulta?')) {
+            // Implementar realização
+        }
+    }
+
+    function cancelarConsulta(id) {
+        if (confirm('Tem certeza que deseja cancelar esta consulta?')) {
+            // Implementar cancelamento
+        }
+    }
+
+    function verProntuario(id) {
+        // Implementar visualização do prontuário
+    }
+
+    function salvarConsulta() {
+        // Implementar salvamento
+    }
 </script>
 {% endblock %}

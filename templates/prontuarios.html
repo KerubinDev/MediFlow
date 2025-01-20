@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Prontuários{% endblock %}
+
+{% block extra_css %}
+<style>
+    .prontuarios-container {
+        position: relative;
+        z-index: 1;
+        padding: 2rem;
+    }
+    
+    .actions {
+        margin-bottom: 2rem;
+    }
+    
+    .prontuario-card {
+        margin-bottom: 1.5rem;
+    }
+
+    .prontuario-header {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .prontuario-body {
+        padding: 1.5rem;
+    }
+
+    .prontuario-info {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .search-box {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        margin-bottom: 1rem;
+        width: 300px;
+    }
+    
+    .search-box:focus {
+        outline: none;
+        border-color: #4ECDC4;
+        box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+    }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: #4ECDC4;
+        box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+        color: white;
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .modal-content {
+        background: rgba(44, 62, 80, 0.95);
+        color: white;
+    }
+
+    .btn-action {
+        margin: 0 0.2rem;
+    }
+
+    .btn-action i {
+        margin-right: 0.3rem;
+    }
+
+    .status-agendada { background: linear-gradient(45deg, #4ECDC4, #45B7AF); }
+    .status-realizada { background: linear-gradient(45deg, #2ECC71, #27AE60); }
+    .status-cancelada { background: linear-gradient(45deg, #E74C3C, #C0392B); }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        color: white;
+        font-size: 0.85rem;
+    }
+
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .section-title {
+        color: #4ECDC4;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="particles-js" class="particles-background"></div>
+
+<div class="prontuarios-container">
+    <div class="actions d-flex justify-content-between align-items-center">
+        <h2 class="text-gradient">
+            <i class="fas fa-file-medical"></i> Prontuários
+        </h2>
+        <div>
+            <input type="text" class="search-box" placeholder="Buscar prontuário...">
+        </div>
+    </div>
+
+    {% for prontuario in prontuarios %}
+    <div class="glass-card prontuario-card">
+        <div class="prontuario-header d-flex justify-content-between align-items-center">
+            <h5 class="text-gradient mb-0">
+                Consulta - {{ prontuario.consulta.data_hora.strftime('%d/%m/%Y %H:%M') }}
+            </h5>
+            <div>
+                <button class="btn-neon btn-sm btn-action" onclick="editarProntuario({{ prontuario.id }})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-neon btn-sm btn-action" onclick="imprimirProntuario({{ prontuario.id }})">
+                    <i class="fas fa-print"></i>
+                </button>
+            </div>
+        </div>
+        <div class="prontuario-body">
+            <div class="prontuario-info">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Paciente:</strong> {{ prontuario.consulta.paciente.nome }}</p>
+                        <p><strong>Médico:</strong> {{ prontuario.consulta.medico.nome }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Status:</strong> 
+                            <span class="status-badge status-{{ prontuario.consulta.status }}">
+                                {{ prontuario.consulta.status|title }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <h6 class="section-title">Diagnóstico</h6>
+                <p>{{ prontuario.diagnostico }}</p>
+            </div>
+            <div class="mb-3">
+                <h6 class="section-title">Prescrição</h6>
+                <p>{{ prontuario.prescricao }}</p>
+            </div>
+            <div>
+                <h6 class="section-title">Exames Solicitados</h6>
+                <p>{{ prontuario.exames_solicitados }}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Modal de Edição -->
+<div class="modal fade" id="modalProntuario" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content glass-card">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-gradient">Editar Prontuário</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formProntuario">
+                    <div class="mb-3">
+                        <label class="form-label">Diagnóstico</label>
+                        <textarea class="form-control" id="diagnostico" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Prescrição</label>
+                        <textarea class="form-control" id="prescricao" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Exames Solicitados</label>
+                        <textarea class="form-control" id="exames"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn-neon" onclick="salvarProntuario()">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script>
+    particlesJS('particles-js', {
+        particles: {
+            number: { value: 80 },
+            color: { value: '#4ECDC4' },
+            shape: { type: 'circle' },
+            opacity: { value: 0.5 },
+            size: { value: 3 },
+            line_linked: {
+                enable: true,
+                distance: 150,
+                color: '#4ECDC4',
+                opacity: 0.4,
+                width: 1
+            },
+            move: {
+                enable: true,
+                speed: 2
+            }
+        }
+    });
+
+    // Funções do CRUD
+    function editarProntuario(id) {
+        $('#modalProntuario').modal('show');
+        // Carregar dados do prontuário
+    }
+
+    function imprimirProntuario(id) {
+        // Implementar impressão
+    }
+
+    function salvarProntuario() {
+        // Implementar salvamento
+    }
+</script>
+{% endblock %} 

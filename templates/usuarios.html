@@ -2,87 +2,187 @@
 
 {% block title %}Usuários{% endblock %}
 
-{% block content %}
-<div class="usuarios-container">
-    <h1>Gerenciamento de Usuários</h1>
+{% block extra_css %}
+<style>
+    .usuarios-container {
+        position: relative;
+        z-index: 1;
+        padding: 2rem;
+    }
     
-    <div class="actions">
-        <button class="btn-primary" onclick="mostrarModalCadastro()">
-            Novo Usuário
-        </button>
+    .actions {
+        margin-bottom: 2rem;
+    }
+    
+    .table-container {
+        padding: 2rem;
+    }
+    
+    .search-box {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        margin-bottom: 1rem;
+        width: 300px;
+    }
+    
+    .search-box:focus {
+        outline: none;
+        border-color: #4ECDC4;
+        box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+    }
+
+    .tipo-admin { background: linear-gradient(45deg, #4ECDC4, #45B7AF); }
+    .tipo-medico { background: linear-gradient(45deg, #2ECC71, #27AE60); }
+    .tipo-recepcionista { background: linear-gradient(45deg, #3498DB, #2980B9); }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        color: white;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="particles-js" class="particles-background"></div>
+
+<div class="usuarios-container">
+    <div class="actions d-flex justify-content-between align-items-center">
+        <h2 class="text-gradient">
+            <i class="fas fa-users"></i> Usuários
+        </h2>
+        <div>
+            <input type="text" class="search-box" placeholder="Buscar usuário...">
+            <button class="btn-neon" onclick="mostrarModalUsuario()">
+                <i class="fas fa-plus"></i> Novo Usuário
+            </button>
+        </div>
     </div>
 
-    <div class="usuarios-lista">
-        <table>
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Email</th>
-                    <th>Tipo</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for usuario in usuarios %}
-                <tr>
-                    <td>{{ usuario.nome }}</td>
-                    <td>{{ usuario.email }}</td>
-                    <td>{{ usuario.tipo }}</td>
-                    <td>
-                        <button onclick="editarUsuario({{ usuario.id }})" 
-                                class="btn-secondary">
-                            Editar
-                        </button>
-                        {% if usuario.id != current_user.id %}
-                        <button onclick="excluirUsuario({{ usuario.id }})" 
-                                class="btn-danger">
-                            Excluir
-                        </button>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="glass-card table-container">
+        <div class="table-responsive">
+            <table class="table custom-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Tipo</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td>{{ usuario.nome }}</td>
+                        <td>{{ usuario.email }}</td>
+                        <td>
+                            <span class="status-badge tipo-{{ usuario.tipo }}">
+                                {{ usuario.tipo|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn-neon btn-sm" onclick="editarUsuario({{ usuario.id }})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            {% if usuario.email != 'admin@medflow.com' %}
+                            <button class="btn-danger btn-sm" onclick="excluirUsuario({{ usuario.id }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<!-- Modal de Cadastro/Edição -->
-<div id="modalUsuario" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2 id="modalTitulo">Novo Usuário</h2>
-        <form id="formUsuario" onsubmit="salvarUsuario(event)">
-            <input type="hidden" id="usuarioId">
-            <div class="form-group">
-                <label for="nome">Nome:</label>
-                <input type="text" id="nome" required>
+<!-- Modal de Usuário -->
+<div class="modal fade" id="modalUsuario" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content glass-card">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-gradient">Novo Usuário</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" required>
+            <div class="modal-body">
+                <form id="formUsuario">
+                    <div class="mb-3">
+                        <label class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Senha</label>
+                        <input type="password" class="form-control" id="senha" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo</label>
+                        <select class="form-control" id="tipo" required>
+                            <option value="admin">Administrador</option>
+                            <option value="medico">Médico</option>
+                            <option value="recepcionista">Recepcionista</option>
+                        </select>
+                    </div>
+                </form>
             </div>
-            <div class="form-group">
-                <label for="senha">Senha:</label>
-                <input type="password" id="senha">
-                <small>Deixe em branco para manter a senha atual ao editar</small>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn-neon" onclick="salvarUsuario()">Salvar</button>
             </div>
-            <div class="form-group">
-                <label for="tipo">Tipo:</label>
-                <select id="tipo" required>
-                    <option value="admin">Administrador</option>
-                    <option value="medico">Médico</option>
-                    <option value="recepcionista">Recepcionista</option>
-                </select>
-            </div>
-            <button type="submit" class="btn-primary">Salvar</button>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %}
 
-{% block scripts %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 <script>
-// Adicione o JavaScript necessário para gerenciar o modal e as operações CRUD
+    particlesJS('particles-js', {
+        particles: {
+            number: { value: 80 },
+            color: { value: '#4ECDC4' },
+            shape: { type: 'circle' },
+            opacity: { value: 0.5 },
+            size: { value: 3 },
+            line_linked: {
+                enable: true,
+                distance: 150,
+                color: '#4ECDC4',
+                opacity: 0.4,
+                width: 1
+            },
+            move: {
+                enable: true,
+                speed: 2
+            }
+        }
+    });
+
+    // Funções do CRUD
+    function mostrarModalUsuario() {
+        $('#modalUsuario').modal('show');
+    }
+
+    function editarUsuario(id) {
+        // Implementar edição
+    }
+
+    function excluirUsuario(id) {
+        if (confirm('Tem certeza que deseja excluir este usuário?')) {
+            // Implementar exclusão
+        }
+    }
+
+    function salvarUsuario() {
+        // Implementar salvamento
+    }
 </script>
 {% endblock %} 

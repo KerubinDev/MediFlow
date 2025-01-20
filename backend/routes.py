@@ -247,24 +247,37 @@ def dashboard():
 @views.route('/consultas')
 @login_required
 def consultas():
-    """Página de gerenciamento de consultas"""
+    """Página de consultas"""
     consultas = Consulta.query.order_by(Consulta.data_hora).all()
-    return render_template('consultas.html', consultas=consultas)
+    pacientes = Paciente.query.order_by(Paciente.nome).all()
+    medicos = Medico.query.order_by(Medico.nome).all()
+    return render_template('consultas.html', 
+                         consultas=consultas,
+                         pacientes=pacientes,
+                         medicos=medicos)
 
 @views.route('/prontuarios')
 @login_required
 @medico_required
 def prontuarios():
-    """Página de prontuários médicos"""
-    prontuarios = Prontuario.query.order_by(
-        Prontuario.data_criacao.desc()
-    ).all()
-    return render_template('prontuario.html', prontuarios=prontuarios)
+    """Página de prontuários"""
+    if current_user.tipo == 'medico':
+        # Filtrar prontuários apenas do médico logado
+        medico = Medico.query.filter_by(nome=current_user.nome).first()
+        prontuarios = Prontuario.query.join(Consulta).filter(
+            Consulta.medico_id == medico.id
+        ).order_by(Consulta.data_hora.desc()).all()
+    else:
+        # Admin vê todos os prontuários
+        prontuarios = Prontuario.query.join(Consulta).order_by(
+            Consulta.data_hora.desc()
+        ).all()
+    return render_template('prontuarios.html', prontuarios=prontuarios)
 
 @views.route('/pacientes')
 @login_required
 def pacientes():
-    """Página de gerenciamento de pacientes"""
+    """Página de pacientes"""
     pacientes = Paciente.query.order_by(Paciente.nome).all()
     return render_template('pacientes.html', pacientes=pacientes)
 
