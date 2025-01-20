@@ -13,20 +13,20 @@ with app.app_context():
     inicializar_banco()
     
     # Mostra os logins disponíveis
-    print(f"\n{Fore.GREEN}=== Logins Disponíveis ==={Style.RESET_ALL}")
-    print(f"\n{Fore.YELLOW}Admin Geral:{Style.RESET_ALL}")
+    print("\n=== Logins Disponíveis ===")
+    print("\nAdmin Geral:")
     print("Email: admin@medflow.com")
     print("Senha: admin123")
     
-    print(f"\n{Fore.YELLOW}Médico:{Style.RESET_ALL}")
+    print("\nMédico:")
     print("Email: medico@medflow.com")
     print("Senha: medico123")
     
-    print(f"\n{Fore.YELLOW}Recepcionista:{Style.RESET_ALL}")
+    print("\nRecepcionista:")
     print("Email: recepcao@medflow.com")
     print("Senha: recepcao123")
     
-    print(f"\n{Fore.GREEN}Servidor iniciando...{Style.RESET_ALL}\n")
+    print("\nServidor iniciando...\n")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
