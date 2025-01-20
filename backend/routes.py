@@ -3,9 +3,10 @@ from flask_login import login_required, current_user
 from backend.models import (Usuario, Paciente, Medico, Consulta, Prontuario, 
     Pagamento)
 from backend.database import db
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from functools import wraps
 from flask import abort
+from sqlalchemy import func, cast, Date
 
 # Criação do Blueprint para as rotas da API
 api = Blueprint('api', __name__)
@@ -207,16 +208,21 @@ def medico_required(f):
 @admin_required
 def dashboard():
     """Renderiza o dashboard principal"""
+    hoje = date.today()
+    amanha = hoje + timedelta(days=1)
+    
     stats = {
         'consultas_hoje': Consulta.query.filter(
-            Consulta.data_hora.date() == date.today()
+            Consulta.data_hora >= hoje,
+            Consulta.data_hora < amanha
         ).count(),
         'total_pacientes': Paciente.query.count(),
         'medicos_ativos': Medico.query.count()
     }
     
     consultas = Consulta.query.filter(
-        Consulta.data_hora.date() == date.today()
+        Consulta.data_hora >= hoje,
+        Consulta.data_hora < amanha
     ).order_by(Consulta.data_hora).all()
     
     return render_template('dashboard.html', stats=stats, consultas=consultas)
