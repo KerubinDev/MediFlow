@@ -1,7 +1,7 @@
 const API = {
     // Consultas
     async criarConsulta(dados) {
-        const response = await fetch('/api/consultas', {
+        const response = await fetch('/api/consultas/criar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dados)
@@ -65,8 +65,13 @@ const API = {
         return response.json();
     },
 
+    async obterPaciente(id) {
+        const response = await fetch(`/api/pacientes/${id}/detalhes`);
+        return response.json();
+    },
+
     async atualizarPaciente(id, dados) {
-        const response = await fetch(`/api/pacientes/${id}`, {
+        const response = await fetch(`/api/pacientes/${id}/atualizar`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dados)
@@ -75,7 +80,7 @@ const API = {
     },
 
     async excluirPaciente(id) {
-        const response = await fetch(`/api/pacientes/${id}`, {
+        const response = await fetch(`/api/pacientes/${id}/excluir`, {
             method: 'DELETE'
         });
         return response.json();
