@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify, request, render_template
 from flask_login import login_required, current_user
-from models import (Usuario, Paciente, Medico, Consulta, Prontuario, 
+from backend.models import (Usuario, Paciente, Medico, Consulta, Prontuario, 
     Pagamento)
-from database import db
+from backend.database import db
 from datetime import datetime, date
 
 # Criação do Blueprint para as rotas da API

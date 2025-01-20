@@ -1,10 +1,10 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_login import LoginManager
-from config import Config
-from database import db
-from routes import api, views
-from auth import auth, login_manager
+from backend.config import Config
+from backend.database import db
+from backend.routes import api, views
+from backend.auth import auth, login_manager
 from werkzeug.exceptions import HTTPException
 import json
 
