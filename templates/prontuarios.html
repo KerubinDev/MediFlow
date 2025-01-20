@@ -244,8 +244,21 @@
         console.error('jQuery não está carregado!');
     }
 
+    // Função para limpar modais
+    function limparModais() {
+        // Remove qualquer backdrop residual
+        $('.modal-backdrop').remove();
+        // Remove a classe 'modal-open' do body
+        $('body').removeClass('modal-open').css('overflow', '');
+        // Esconde todos os modais
+        $('.modal').modal('hide');
+    }
+
     async function editarProntuario(id) {
         try {
+            // Limpa modais anteriores
+            limparModais();
+            
             console.log(`Editando prontuário ${id}`);
             const response = await fetch(`/api/prontuarios/${id}/detalhes`);
             
@@ -266,7 +279,10 @@
             document.getElementById('formProntuario').dataset.prontuarioId = id;
             
             // Mostrar o modal de edição
-            $('#modalEditarProntuario').modal('show');
+            $('#modalEditarProntuario').modal({
+                backdrop: 'static',
+                keyboard: false
+            }).modal('show');
         } catch (error) {
             console.error('Erro:', error);
             alert(`Erro ao carregar dados do prontuário: ${error.message}`);
@@ -275,6 +291,7 @@
 
     // Função para visualizar prontuário
     function visualizarProntuario(id) {
+        limparModais();
         carregarDetalhesProntuario(id);
     }
 
@@ -294,6 +311,9 @@
             };
 
             await API.atualizarProntuario(id, dados);
+            
+            // Limpa e fecha o modal antes de recarregar
+            limparModais();
             location.reload();
         } catch (error) {
             console.error('Erro ao salvar:', error);
@@ -309,5 +329,13 @@
             alert(`Erro ao gerar impressão do prontuário: ${error.message}`);
         }
     }
+
+    // Adiciona listeners para eventos de modal
+    $(document).ready(function() {
+        // Limpa modais quando qualquer modal for fechado
+        $('.modal').on('hidden.bs.modal', function() {
+            limparModais();
+        });
+    });
 </script>
 {% endblock %} 
