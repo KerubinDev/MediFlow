@@ -47,7 +47,7 @@ def recepcionista_required(f):
     return decorated_function
 
 # Rotas da API
-@api.route('/api/consultas', methods=['GET'])
+@api.route('/consultas', methods=['GET'])
 @login_required
 def listar_consultas():
     try:
@@ -64,7 +64,7 @@ def listar_consultas():
     except Exception as e:
         return jsonify({'erro': str(e)}), 500
 
-@api.route('/api/consultas', methods=['POST'])
+@api.route('/consultas', methods=['POST'])
 @login_required
 def criar_consulta():
     try:
@@ -90,7 +90,7 @@ def criar_consulta():
         print(f"Erro ao criar consulta: {str(e)}")  # Log para debug
         return jsonify({'erro': str(e)}), 500
 
-@api.route('/api/consultas/<int:id>', methods=['GET'])
+@api.route('/consultas/<int:id>', methods=['GET'])
 @login_required
 def obter_consulta(id):
     consulta = Consulta.query.get_or_404(id)
@@ -102,7 +102,7 @@ def obter_consulta(id):
         'status': consulta.status
     })
 
-@api.route('/api/consultas/<int:id>', methods=['PUT'])
+@api.route('/consultas/<int:id>', methods=['PUT'])
 @login_required
 def atualizar_consulta(id):
     consulta = Consulta.query.get_or_404(id)
@@ -113,7 +113,7 @@ def atualizar_consulta(id):
     db.session.commit()
     return jsonify({'mensagem': 'Consulta atualizada com sucesso'})
 
-@api.route('/api/consultas/<int:id>/realizar', methods=['PUT'])
+@api.route('/consultas/<int:id>/realizar', methods=['PUT'])
 @login_required
 @medico_required
 def realizar_consulta(id):
@@ -122,7 +122,7 @@ def realizar_consulta(id):
     db.session.commit()
     return jsonify({'mensagem': 'Consulta realizada com sucesso'})
 
-@api.route('/api/consultas/<int:id>/cancelar', methods=['PUT'])
+@api.route('/consultas/<int:id>/cancelar', methods=['PUT'])
 @login_required
 def cancelar_consulta(id):
     consulta = Consulta.query.get_or_404(id)
@@ -130,7 +130,7 @@ def cancelar_consulta(id):
     db.session.commit()
     return jsonify({'mensagem': 'Consulta cancelada com sucesso'})
 
-@api.route('/api/prontuarios', methods=['POST'])
+@api.route('/prontuarios', methods=['POST'])
 @login_required
 @medico_required
 def criar_prontuario():

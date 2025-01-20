@@ -39,7 +39,7 @@ def criar_app(config_class=Config):
         return Usuario.query.get(int(user_id))
     
     # Registra blueprints
-    app.register_blueprint(api, url_prefix='/api')
+    app.register_blueprint(api)
     app.register_blueprint(auth, url_prefix='/auth')
     app.register_blueprint(views)
     
@@ -55,14 +55,32 @@ def criar_app(config_class=Config):
         response.content_type = "application/json"
         return response
 
-    @app.errorhandler(Exception)
-    def handle_error(e):
-        """Trata erros não-HTTP"""
+    @app.errorhandler(404)
+    def not_found_error(error):
+        """Tratamento específico para erro 404"""
+        logger.error(f"Rota não encontrada: {request.url}")
         return jsonify({
-            "code": 500,
-            "name": "Internal Server Error",
-            "description": str(e)
+            'erro': 'Rota não encontrada',
+            'url': request.url,
+            'method': request.method
+        }), 404
+
+    @app.errorhandler(Exception)
+    def handle_error(error):
+        """Tratamento genérico de erros"""
+        logger.error(f"Erro não tratado: {str(error)}")
+        return jsonify({
+            'erro': str(error),
+            'tipo': type(error).__name__
         }), 500
+
+    @app.before_request
+    def log_request_info():
+        """Log detalhes da requisição para debug"""
+        logger.debug('Headers: %s', request.headers)
+        logger.debug('Body: %s', request.get_data())
+        logger.debug('URL: %s', request.url)
+        logger.debug('Method: %s', request.method)
 
     return app
 
