@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, current_app
 from flask_cors import CORS
 from flask_login import LoginManager
 from backend.config import Config
@@ -65,22 +65,25 @@ def criar_app(config_class=Config):
             'method': request.method
         }), 404
 
-    @app.errorhandler(Exception)
-    def handle_error(error):
-        """Tratamento genérico de erros"""
-        logger.error(f"Erro não tratado: {str(error)}")
+    @app.errorhandler(500)
+    def internal_error(error):
+        current_app.logger.error(f"Erro 500: {str(error)}")
+        db.session.rollback()  # Rollback em caso de erro no banco
         return jsonify({
-            'erro': str(error),
-            'tipo': type(error).__name__
+            'erro': 'Erro interno do servidor',
+            'detalhes': str(error)
         }), 500
 
     @app.before_request
     def log_request_info():
-        """Log detalhes da requisição para debug"""
-        logger.debug('Headers: %s', request.headers)
-        logger.debug('Body: %s', request.get_data())
-        logger.debug('URL: %s', request.url)
-        logger.debug('Method: %s', request.method)
+        current_app.logger.debug('------------------------')
+        current_app.logger.debug('Nova Requisição:')
+        current_app.logger.debug(f'URL: {request.url}')
+        current_app.logger.debug(f'Método: {request.method}')
+        current_app.logger.debug(f'Headers: {dict(request.headers)}')
+        if request.is_json:
+            current_app.logger.debug(f'Dados JSON: {request.get_json()}')
+        current_app.logger.debug('------------------------')
 
     return app
 

@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, render_template, redirect, url_for
+from flask import Blueprint, jsonify, request, render_template, redirect, url_for, current_app
 from flask_login import login_required, current_user
 from backend.models import (Usuario, Paciente, Medico, Consulta, Prontuario, 
     Pagamento)
@@ -9,7 +9,7 @@ from flask import abort
 from sqlalchemy import func, cast, Date
 
 # Criação do Blueprint para as rotas da API
-api = Blueprint('api', __name__)
+api = Blueprint('api', __name__, url_prefix='/api')
 views = Blueprint('views', __name__)
 
 # Definição dos decoradores de permissão
@@ -51,8 +51,11 @@ def recepcionista_required(f):
 @login_required
 def listar_consultas():
     try:
+        current_app.logger.debug("Iniciando listagem de consultas")
         consultas = Consulta.query.all()
-        return jsonify([{
+        current_app.logger.debug(f"Encontradas {len(consultas)} consultas")
+        
+        resultado = [{
             'id': c.id,
             'paciente_id': c.paciente_id,
             'medico_id': c.medico_id,
@@ -60,8 +63,12 @@ def listar_consultas():
             'status': c.status,
             'paciente': {'nome': c.paciente.nome},
             'medico': {'nome': c.medico.nome}
-        } for c in consultas])
+        } for c in consultas]
+        
+        return jsonify(resultado)
     except Exception as e:
+        current_app.logger.error(f"Erro ao listar consultas: {str(e)}")
+        db.session.rollback()
         return jsonify({'erro': str(e)}), 500
 
 @api.route('/consultas', methods=['POST'])
@@ -69,25 +76,36 @@ def listar_consultas():
 def criar_consulta():
     try:
         dados = request.get_json()
-        print(f"Dados recebidos: {dados}")  # Log para debug
+        current_app.logger.debug(f"Dados recebidos para criar consulta: {dados}")
+        
+        # Validar dados
+        if not all(k in dados for k in ['paciente_id', 'medico_id', 'data_hora']):
+            return jsonify({'erro': 'Dados incompletos'}), 400
+            
+        # Converter string para datetime
+        try:
+            data_hora = datetime.fromisoformat(dados['data_hora'])
+        except ValueError as e:
+            return jsonify({'erro': f'Formato de data inválido: {str(e)}'}), 400
         
         consulta = Consulta(
             paciente_id=dados['paciente_id'],
             medico_id=dados['medico_id'],
-            data_hora=datetime.fromisoformat(dados['data_hora']),
+            data_hora=data_hora,
             status='agendada'
         )
         
         db.session.add(consulta)
         db.session.commit()
         
+        current_app.logger.info(f"Consulta criada com sucesso: ID {consulta.id}")
         return jsonify({
             'mensagem': 'Consulta criada com sucesso',
             'id': consulta.id
         })
     except Exception as e:
+        current_app.logger.error(f"Erro ao criar consulta: {str(e)}")
         db.session.rollback()
-        print(f"Erro ao criar consulta: {str(e)}")  # Log para debug
         return jsonify({'erro': str(e)}), 500
 
 @api.route('/consultas/<int:id>', methods=['GET'])

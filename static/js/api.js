@@ -18,12 +18,20 @@ window.API = window.API || {
                 body: JSON.stringify(dados)
             });
             
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.erro || 'Erro ao criar consulta');
+            }
+            
             const result = await response.json();
             Utils.mostrarFeedback('Consulta criada com sucesso!');
             return result;
         } catch (error) {
             console.error('Erro ao criar consulta:', error);
-            Utils.mostrarFeedback(error.message, 'danger');
+            Utils.mostrarFeedback(
+                error.message || 'Erro ao criar consulta. Tente novamente.',
+                'danger'
+            );
             throw error;
         }
     },
