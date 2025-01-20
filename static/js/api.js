@@ -112,4 +112,53 @@ const API = {
         const response = await fetch(`/api/pacientes/${id}/historico`);
         return response.json();
     }
-}; 
+};
+
+// Função para carregar detalhes do prontuário
+function carregarDetalhesProntuario(prontuarioId) {
+    try {
+        $.ajax({
+            url: `/api/prontuarios/${prontuarioId}/detalhes`,
+            method: 'GET',
+            success: function(response) {
+                if (response && response.dados) {
+                    const dados = response.dados;
+                    
+                    // Preencher os campos do modal
+                    $('#modalProntuarioTitulo').text(
+                        `Prontuário - ${dados.consulta.paciente.nome}`
+                    );
+                    $('#modalProntuarioData').text(
+                        new Date(dados.consulta.data_hora).toLocaleDateString('pt-BR')
+                    );
+                    $('#modalProntuarioMedico').text(dados.consulta.medico.nome);
+                    $('#modalProntuarioDiagnostico').text(dados.diagnostico || 'Não informado');
+                    $('#modalProntuarioPrescricao').text(dados.prescricao || 'Não informado');
+                    $('#modalProntuarioExames').text(dados.exames_solicitados || 'Não informado');
+                    
+                    // Exibir o modal
+                    $('#modalProntuario').modal('show');
+                } else {
+                    console.error('Resposta inválida do servidor');
+                    alert('Erro ao carregar dados do prontuário');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Erro na requisição:', error);
+                alert('Erro ao carregar dados do prontuário');
+            }
+        });
+    } catch (error) {
+        console.error('Erro ao processar prontuário:', error);
+        alert('Erro ao processar dados do prontuário');
+    }
+}
+
+// Adicionar listeners quando o documento estiver pronto
+$(document).ready(function() {
+    // Listener para botões de visualização de prontuário
+    $('.btn-ver-prontuario').click(function() {
+        const prontuarioId = $(this).data('prontuario-id');
+        carregarDetalhesProntuario(prontuarioId);
+    });
+}); 
