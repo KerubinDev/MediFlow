@@ -2,12 +2,17 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_login import LoginManager
 from backend.config import Config
-from backend.database import db
+from backend.database import db, init_db
 from backend.routes import api, views
-from backend.auth import auth, login_manager
+from backend.auth import auth
 from werkzeug.exceptions import HTTPException
 import json
 import os
+import logging
+from backend.models import Usuario
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def criar_app(config_class=Config):
     """Cria e configura a aplicação Flask"""
@@ -23,18 +28,20 @@ def criar_app(config_class=Config):
     
     # Inicializa extensões
     CORS(app)
-    db.init_app(app)
-    login_manager.init_app(app)
+    init_db(app)
+    
+    login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
+    login_manager.init_app(app)
+    
+    @login_manager.user_loader
+    def load_user(user_id):
+        return Usuario.query.get(int(user_id))
     
     # Registra blueprints
     app.register_blueprint(api, url_prefix='/api')
     app.register_blueprint(auth, url_prefix='/auth')
     app.register_blueprint(views)
-    
-    # Cria tabelas do banco de dados
-    with app.app_context():
-        db.create_all()
     
     @app.errorhandler(HTTPException)
     def handle_exception(e):

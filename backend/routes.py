@@ -147,25 +147,39 @@ def atualizar_consulta(id):
 @medico_required
 def obter_prontuario_detalhes(id):
     """Retorna detalhes de um prontuário específico"""
-    prontuario = Prontuario.query.get_or_404(id)
-    return jsonify({
-        'id': prontuario.id,
-        'consulta': {
-            'id': prontuario.consulta.id,
-            'data_hora': prontuario.consulta.data_hora.isoformat(),
-            'paciente': {
-                'id': prontuario.consulta.paciente.id,
-                'nome': prontuario.consulta.paciente.nome
+    try:
+        prontuario = Prontuario.query.get_or_404(id)
+        
+        if not prontuario.consulta:
+            return jsonify({'erro': 'Consulta não encontrada para este prontuário'}), 404
+            
+        if not prontuario.consulta.paciente:
+            return jsonify({'erro': 'Paciente não encontrado para esta consulta'}), 404
+            
+        if not prontuario.consulta.medico:
+            return jsonify({'erro': 'Médico não encontrado para esta consulta'}), 404
+        
+        return jsonify({
+            'id': prontuario.id,
+            'consulta': {
+                'id': prontuario.consulta.id,
+                'data_hora': prontuario.consulta.data_hora.isoformat(),
+                'paciente': {
+                    'id': prontuario.consulta.paciente.id,
+                    'nome': prontuario.consulta.paciente.nome
+                },
+                'medico': {
+                    'id': prontuario.consulta.medico.id,
+                    'nome': prontuario.consulta.medico.nome
+                }
             },
-            'medico': {
-                'id': prontuario.consulta.medico.id,
-                'nome': prontuario.consulta.medico.nome
-            }
-        },
-        'diagnostico': prontuario.diagnostico,
-        'prescricao': prontuario.prescricao,
-        'exames_solicitados': prontuario.exames_solicitados
-    })
+            'diagnostico': prontuario.diagnostico,
+            'prescricao': prontuario.prescricao,
+            'exames_solicitados': prontuario.exames_solicitados
+        })
+    except Exception as e:
+        print(f"Erro ao obter prontuário: {str(e)}")
+        return jsonify({'erro': f'Erro ao carregar dados do prontuário: {str(e)}'}), 500
 
 
 @api.route('/prontuarios/<int:id>/atualizar', methods=['PUT'])
