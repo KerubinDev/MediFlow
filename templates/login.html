@@ -2,21 +2,94 @@
 
 {% block title %}Login{% endblock %}
 
+{% block extra_css %}
+<style>
+    .login-container {
+        position: relative;
+        z-index: 1;
+        max-width: 400px;
+        margin: 100px auto;
+    }
+    
+    .login-card {
+        padding: 2rem;
+    }
+    
+    .login-title {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: #4ECDC4;
+        box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+        color: white;
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .btn-login {
+        width: 100%;
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+<div id="particles-js" class="particles-background"></div>
+
 <div class="login-container">
-    <h2>Login MedFlow</h2>
-    <form method="POST" action="{{ url_for('auth.login') }}">
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
-        </div>
-        
-        <div class="form-group">
-            <label for="senha">Senha:</label>
-            <input type="password" id="senha" name="senha" required>
-        </div>
-        
-        <button type="submit" class="btn-primary">Entrar</button>
-    </form>
+    <div class="glass-card login-card">
+        <h2 class="login-title text-gradient">
+            <i class="fas fa-hospital-user"></i> MedFlow
+        </h2>
+        <form method="POST" action="{{ url_for('auth.login') }}">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="senha" class="form-label">Senha</label>
+                <input type="password" class="form-control" id="senha" name="senha" required>
+            </div>
+            <button type="submit" class="btn-neon btn-login">Entrar</button>
+        </form>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script>
+    particlesJS('particles-js', {
+        particles: {
+            number: { value: 80 },
+            color: { value: '#4ECDC4' },
+            shape: { type: 'circle' },
+            opacity: { value: 0.5 },
+            size: { value: 3 },
+            line_linked: {
+                enable: true,
+                distance: 150,
+                color: '#4ECDC4',
+                opacity: 0.4,
+                width: 1
+            },
+            move: {
+                enable: true,
+                speed: 2
+            }
+        }
+    });
+</script>
 {% endblock %}

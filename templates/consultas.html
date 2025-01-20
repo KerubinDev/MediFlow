@@ -2,53 +2,196 @@
 
 {% block title %}Consultas{% endblock %}
 
-{% block content %}
-<div class="consultas-container">
-    <h1>Gerenciamento de Consultas</h1>
+{% block extra_css %}
+<style>
+    .consultas-container {
+        position: relative;
+        z-index: 1;
+        padding: 2rem;
+    }
     
-    <div class="actions">
-        <button class="btn-primary" onclick="mostrarModalAgendamento()">
-            Nova Consulta
-        </button>
+    .actions {
+        margin-bottom: 2rem;
+    }
+    
+    .table-container {
+        padding: 2rem;
+    }
+    
+    .search-box {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        margin-bottom: 1rem;
+        width: 300px;
+    }
+    
+    .search-box:focus {
+        outline: none;
+        border-color: #4ECDC4;
+        box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+    }
+
+    .status-agendada {
+        background: linear-gradient(45deg, #4ECDC4, #45B7AF);
+    }
+
+    .status-realizada {
+        background: linear-gradient(45deg, #2ECC71, #27AE60);
+    }
+
+    .status-cancelada {
+        background: linear-gradient(45deg, #E74C3C, #C0392B);
+    }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: #4ECDC4;
+        box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+        color: white;
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .modal-content {
+        background: rgba(44, 62, 80, 0.95);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="particles-js" class="particles-background"></div>
+
+<div class="consultas-container">
+    <div class="actions d-flex justify-content-between align-items-center">
+        <h2 class="text-gradient">
+            <i class="fas fa-calendar-check"></i> Consultas
+        </h2>
+        <div>
+            <input type="text" class="search-box" placeholder="Buscar consulta...">
+            <button class="btn-neon" onclick="mostrarModalConsulta()">
+                <i class="fas fa-plus"></i> Nova Consulta
+            </button>
+        </div>
     </div>
 
-    <div class="consultas-lista">
-        <table>
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Hora</th>
-                    <th>Paciente</th>
-                    <th>Médico</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for consulta in consultas %}
-                <tr>
-                    <td>{{ consulta.data_hora.strftime('%d/%m/%Y') }}</td>
-                    <td>{{ consulta.data_hora.strftime('%H:%M') }}</td>
-                    <td>{{ consulta.paciente.nome }}</td>
-                    <td>{{ consulta.medico.nome }}</td>
-                    <td>{{ consulta.status }}</td>
-                    <td>
-                        <button onclick="editarConsulta({{ consulta.id }})">
-                            Editar
-                        </button>
-                        <button onclick="cancelarConsulta({{ consulta.id }})">
-                            Cancelar
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="glass-card table-container">
+        <div class="table-responsive">
+            <table class="table custom-table">
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Paciente</th>
+                        <th>Médico</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for consulta in consultas %}
+                    <tr>
+                        <td>{{ consulta.data_hora.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>{{ consulta.paciente.nome }}</td>
+                        <td>{{ consulta.medico.nome }}</td>
+                        <td>
+                            <span class="status-badge status-{{ consulta.status }}">
+                                {{ consulta.status|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn-neon btn-sm" onclick="editarConsulta({{ consulta.id }})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            {% if consulta.status == 'agendada' %}
+                            <button class="btn-neon btn-sm" onclick="realizarConsulta({{ consulta.id }})">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn-danger btn-sm" onclick="cancelarConsulta({{ consulta.id }})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<!-- Modal de Agendamento -->
-<div id="modalAgendamento" class="modal">
-    <!-- Conteúdo do modal aqui -->
+<!-- Modal de Consulta -->
+<div class="modal fade" id="modalConsulta" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content glass-card">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-gradient">Nova Consulta</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formConsulta">
+                    <div class="mb-3">
+                        <label class="form-label">Paciente</label>
+                        <select class="form-control" id="paciente" required>
+                            {% for paciente in pacientes %}
+                            <option value="{{ paciente.id }}">{{ paciente.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Médico</label>
+                        <select class="form-control" id="medico" required>
+                            {% for medico in medicos %}
+                            <option value="{{ medico.id }}">{{ medico.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Data e Hora</label>
+                        <input type="datetime-local" class="form-control" id="dataHora" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn-neon" onclick="salvarConsulta()">Salvar</button>
+            </div>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script>
+    particlesJS('particles-js', {
+        particles: {
+            number: { value: 80 },
+            color: { value: '#4ECDC4' },
+            shape: { type: 'circle' },
+            opacity: { value: 0.5 },
+            size: { value: 3 },
+            line_linked: {
+                enable: true,
+                distance: 150,
+                color: '#4ECDC4',
+                opacity: 0.4,
+                width: 1
+            },
+            move: {
+                enable: true,
+                speed: 2
+            }
+        }
+    });
+</script>
 {% endblock %}

@@ -2,183 +2,149 @@
 
 {% block title %}Pacientes{% endblock %}
 
-{% block content %}
-<div class="pacientes-container">
-    <h1>Gerenciamento de Pacientes</h1>
+{% block extra_css %}
+<style>
+    .pacientes-container {
+        position: relative;
+        z-index: 1;
+        padding: 2rem;
+    }
     
-    <div class="actions">
-        <button class="btn-primary" onclick="mostrarModalCadastro()">
-            Novo Paciente
-        </button>
+    .actions {
+        margin-bottom: 2rem;
+    }
+    
+    .table-container {
+        padding: 2rem;
+    }
+    
+    .search-box {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        margin-bottom: 1rem;
+        width: 300px;
+    }
+    
+    .search-box:focus {
+        outline: none;
+        border-color: #4ECDC4;
+        box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="particles-js" class="particles-background"></div>
+
+<div class="pacientes-container">
+    <div class="actions d-flex justify-content-between align-items-center">
+        <h2 class="text-gradient">
+            <i class="fas fa-user-injured"></i> Pacientes
+        </h2>
+        <div>
+            <input type="text" class="search-box" placeholder="Buscar paciente...">
+            <button class="btn-neon" onclick="mostrarModalCadastro()">
+                <i class="fas fa-plus"></i> Novo Paciente
+            </button>
+        </div>
     </div>
 
-    <div class="search-box">
-        <input type="text" 
-               id="pesquisaPaciente" 
-               placeholder="Pesquisar paciente..."
-               onkeyup="filtrarPacientes()">
-    </div>
-
-    <div class="pacientes-lista">
-        <table>
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Telefone</th>
-                    <th>Data de Nascimento</th>
-                    <th>Endereço</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for paciente in pacientes %}
-                <tr>
-                    <td>{{ paciente.nome }}</td>
-                    <td>{{ paciente.telefone }}</td>
-                    <td>{{ paciente.data_nascimento.strftime('%d/%m/%Y') }}</td>
-                    <td>{{ paciente.endereco }}</td>
-                    <td>
-                        <button onclick="editarPaciente({{ paciente.id }})" 
-                                class="btn-secondary">
-                            Editar
-                        </button>
-                        <button onclick="verHistorico({{ paciente.id }})" 
-                                class="btn-secondary">
-                            Histórico
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="glass-card table-container">
+        <div class="table-responsive">
+            <table class="table custom-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Telefone</th>
+                        <th>Data de Nascimento</th>
+                        <th>Endereço</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paciente in pacientes %}
+                    <tr>
+                        <td>{{ paciente.nome }}</td>
+                        <td>{{ paciente.telefone }}</td>
+                        <td>{{ paciente.data_nascimento.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ paciente.endereco }}</td>
+                        <td>
+                            <button class="btn-neon btn-sm" onclick="editarPaciente({{ paciente.id }})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-danger btn-sm" onclick="excluirPaciente({{ paciente.id }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <!-- Modal de Cadastro/Edição -->
-<div id="modalPaciente" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2 id="modalTitulo">Novo Paciente</h2>
-        <form id="formPaciente" onsubmit="salvarPaciente(event)">
-            <input type="hidden" id="pacienteId">
-            <div class="form-group">
-                <label for="nome">Nome:</label>
-                <input type="text" id="nome" required>
+<div class="modal fade" id="modalPaciente" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content glass-card">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-gradient">Novo Paciente</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="form-group">
-                <label for="telefone">Telefone:</label>
-                <input type="tel" id="telefone" required>
+            <div class="modal-body">
+                <form id="formPaciente">
+                    <div class="mb-3">
+                        <label class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Telefone</label>
+                        <input type="text" class="form-control" id="telefone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Data de Nascimento</label>
+                        <input type="date" class="form-control" id="dataNascimento" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Endereço</label>
+                        <input type="text" class="form-control" id="endereco" required>
+                    </div>
+                </form>
             </div>
-            <div class="form-group">
-                <label for="dataNascimento">Data de Nascimento:</label>
-                <input type="date" id="dataNascimento" required>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn-neon" onclick="salvarPaciente()">Salvar</button>
             </div>
-            <div class="form-group">
-                <label for="endereco">Endereço:</label>
-                <input type="text" id="endereco" required>
-            </div>
-            <button type="submit" class="btn-primary">Salvar</button>
-        </form>
-    </div>
-</div>
-
-<!-- Modal de Histórico -->
-<div id="modalHistorico" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Histórico do Paciente</h2>
-        <div id="historicoConsultas">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Médico</th>
-                        <th>Especialidade</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="historicoBody"></tbody>
-            </table>
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block scripts %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 <script>
-function mostrarModalCadastro() {
-    document.getElementById('modalTitulo').textContent = 'Novo Paciente';
-    document.getElementById('formPaciente').reset();
-    document.getElementById('pacienteId').value = '';
-    document.getElementById('modalPaciente').style.display = 'block';
-}
-
-function editarPaciente(id) {
-    fetch(`/api/pacientes/${id}`)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('modalTitulo').textContent = 'Editar Paciente';
-            document.getElementById('pacienteId').value = data.id;
-            document.getElementById('nome').value = data.nome;
-            document.getElementById('telefone').value = data.telefone;
-            document.getElementById('dataNascimento').value = data.data_nascimento;
-            document.getElementById('endereco').value = data.endereco;
-            document.getElementById('modalPaciente').style.display = 'block';
-        });
-}
-
-function verHistorico(id) {
-    fetch(`/api/pacientes/${id}/historico`)
-        .then(response => response.json())
-        .then(data => {
-            const tbody = document.getElementById('historicoBody');
-            tbody.innerHTML = '';
-            
-            data.forEach(consulta => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${new Date(consulta.data_hora).toLocaleDateString()}</td>
-                    <td>${consulta.medico.nome}</td>
-                    <td>${consulta.medico.especialidade}</td>
-                    <td>${consulta.status}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-            
-            document.getElementById('modalHistorico').style.display = 'block';
-        });
-}
-
-function salvarPaciente(event) {
-    event.preventDefault();
-    const id = document.getElementById('pacienteId').value;
-    const dados = {
-        nome: document.getElementById('nome').value,
-        telefone: document.getElementById('telefone').value,
-        data_nascimento: document.getElementById('dataNascimento').value,
-        endereco: document.getElementById('endereco').value
-    };
-    
-    fetch(`/api/pacientes${id ? '/' + id : ''}`, {
-        method: id ? 'PUT' : 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(dados)
-    }).then(() => {
-        window.location.reload();
+    particlesJS('particles-js', {
+        particles: {
+            number: { value: 80 },
+            color: { value: '#4ECDC4' },
+            shape: { type: 'circle' },
+            opacity: { value: 0.5 },
+            size: { value: 3 },
+            line_linked: {
+                enable: true,
+                distance: 150,
+                color: '#4ECDC4',
+                opacity: 0.4,
+                width: 1
+            },
+            move: {
+                enable: true,
+                speed: 2
+            }
+        }
     });
-}
-
-function filtrarPacientes() {
-    const termo = document.getElementById('pesquisaPaciente')
-        .value.toLowerCase();
-    const linhas = document.querySelectorAll('.pacientes-lista tbody tr');
-    
-    linhas.forEach(linha => {
-        const nomePaciente = linha.children[0].textContent.toLowerCase();
-        linha.style.display = nomePaciente.includes(termo) ? '' : 'none';
-    });
-}
 </script>
 {% endblock %}
