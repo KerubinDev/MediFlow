@@ -120,7 +120,7 @@ def criar_dados_exemplo():
 
 def inicializar_banco():
     """
-    Inicializa o banco de dados com usuários padrão para teste.
+    Inicializa o banco de dados com usuários padrão e dados de exemplo.
     """
     # Cria as tabelas se não existirem
     db.create_all()
@@ -148,6 +148,7 @@ def inicializar_banco():
     ]
 
     # Adiciona cada usuário se ele ainda não existir
+    usuarios_criados = {}
     for usuario in usuarios_padrao:
         usuario_existente = Usuario.query.filter_by(
             email=usuario['email']
@@ -157,21 +158,125 @@ def inicializar_banco():
             novo_usuario = Usuario(
                 nome=usuario['nome'],
                 email=usuario['email'],
-                senha=generate_password_hash(
-                    usuario['senha'], 
-                    method='scrypt'
-                ),
                 tipo=usuario['tipo']
             )
+            novo_usuario.set_senha(usuario['senha'])
             db.session.add(novo_usuario)
-    
+            db.session.flush()  # Para obter o ID
+            usuarios_criados[usuario['email']] = novo_usuario
+
+    # Criar médicos de exemplo
+    medicos_exemplo = [
+        {
+            'nome': 'Dr. Silva',
+            'crm': '12345-SP',
+            'especialidade': 'Clínico Geral',
+            'horario_disponivel': '08:00-18:00',
+            'email_usuario': 'medico@medflow.com'
+        },
+        {
+            'nome': 'Dra. Santos',
+            'crm': '54321-SP',
+            'especialidade': 'Pediatra',
+            'horario_disponivel': '09:00-17:00',
+            'email_usuario': 'medico@medflow.com'
+        }
+    ]
+
+    medicos_criados = []
+    for med in medicos_exemplo:
+        if not Medico.query.filter_by(crm=med['crm']).first():
+            usuario = usuarios_criados.get(med['email_usuario'])
+            if usuario:
+                medico = Medico(
+                    nome=med['nome'],
+                    crm=med['crm'],
+                    especialidade=med['especialidade'],
+                    horario_disponivel=med['horario_disponivel'],
+                    usuario_id=usuario.id
+                )
+                db.session.add(medico)
+                db.session.flush()
+                medicos_criados.append(medico)
+
+    # Criar pacientes de exemplo
+    pacientes_exemplo = [
+        {
+            'nome': 'João da Silva',
+            'telefone': '(11) 99999-1111',
+            'data_nascimento': datetime(1990, 5, 15),
+            'endereco': 'Rua das Flores, 123'
+        },
+        {
+            'nome': 'Maria Oliveira',
+            'telefone': '(11) 99999-2222',
+            'data_nascimento': datetime(1985, 8, 20),
+            'endereco': 'Av. Principal, 456'
+        }
+    ]
+
+    pacientes_criados = []
+    for pac in pacientes_exemplo:
+        paciente = Paciente(**pac)
+        db.session.add(paciente)
+        db.session.flush()
+        pacientes_criados.append(paciente)
+
+    # Criar consultas e prontuários de exemplo
+    for i, paciente in enumerate(pacientes_criados):
+        for medico in medicos_criados:
+            # Consulta passada
+            consulta_passada = Consulta(
+                paciente_id=paciente.id,
+                medico_id=medico.id,
+                data_hora=datetime.now() - timedelta(days=i+1),
+                status='realizada'
+            )
+            db.session.add(consulta_passada)
+            db.session.flush()
+
+            # Prontuário para consulta passada
+            prontuario = Prontuario(
+                consulta_id=consulta_passada.id,
+                diagnostico=f'Diagnóstico de exemplo {i+1}',
+                prescricao='Medicamento A, Medicamento B',
+                exames_solicitados='Hemograma, Raio-X'
+            )
+            db.session.add(prontuario)
+
+            # Consulta futura
+            consulta_futura = Consulta(
+                paciente_id=paciente.id,
+                medico_id=medico.id,
+                data_hora=datetime.now() + timedelta(days=i+1),
+                status='agendada'
+            )
+            db.session.add(consulta_futura)
+
+            # Pagamento para consulta passada
+            pagamento = Pagamento(
+                consulta_id=consulta_passada.id,
+                valor=150.00,
+                status='pago',
+                data_pagamento=datetime.now() - timedelta(days=i+1)
+            )
+            db.session.add(pagamento)
+
     # Commit das alterações
     try:
         db.session.commit()
-        print("Banco de dados inicializado com sucesso!")
+        print("\nBanco de dados inicializado com sucesso!")
+        print("\nDados criados:")
+        print(f"- {len(usuarios_padrao)} usuários")
+        print(f"- {len(medicos_criados)} médicos")
+        print(f"- {len(pacientes_criados)} pacientes")
+        print(f"- {len(pacientes_criados) * len(medicos_criados) * 2} consultas")
+        print(f"- {len(pacientes_criados) * len(medicos_criados)} prontuários")
+        print(f"- {len(pacientes_criados) * len(medicos_criados)} pagamentos")
     except Exception as e:
         db.session.rollback()
         print(f"Erro ao inicializar o banco de dados: {str(e)}")
+        raise
 
 if __name__ == '__main__':
     inicializar_banco() 

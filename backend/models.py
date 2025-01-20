@@ -12,6 +12,14 @@ class Usuario(UserMixin, db.Model):
     senha = db.Column(db.String(200), nullable=False)
     tipo = db.Column(db.String(20), nullable=False)  # admin, medico, recepcionista
     
+    def set_senha(self, senha):
+        """Define a senha do usuário"""
+        self.senha = generate_password_hash(senha, method='scrypt')
+    
+    def verificar_senha(self, senha):
+        """Verifica se a senha está correta"""
+        return check_password_hash(self.senha, senha)
+    
     def is_admin(self):
         return self.tipo == 'admin'
     
