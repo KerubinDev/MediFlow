@@ -164,8 +164,8 @@
     {% endfor %}
 </div>
 
-<!-- Modal de Prontuário -->
-<div class="modal fade" id="modalProntuario" tabindex="-1" aria-hidden="true">
+<!-- Modal de Visualização -->
+<div class="modal fade" id="modalVisualizarProntuario" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content glass-card">
             <div class="modal-header">
@@ -200,6 +200,37 @@
         </div>
     </div>
 </div>
+
+<!-- Modal de Edição -->
+<div class="modal fade" id="modalEditarProntuario" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content glass-card">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-gradient">Editar Prontuário</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formProntuario">
+                    <div class="mb-3">
+                        <label class="form-label">Diagnóstico</label>
+                        <textarea class="form-control" id="diagnostico" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Prescrição</label>
+                        <textarea class="form-control" id="prescricao" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Exames Solicitados</label>
+                        <textarea class="form-control" id="exames"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn-neon" onclick="salvarProntuario()">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -226,21 +257,25 @@
             const prontuario = await response.json();
             console.log('Dados do prontuário:', prontuario);
             
-            if (!prontuario.diagnostico || !prontuario.prescricao || !prontuario.exames_solicitados) {
-                console.warn('Dados incompletos do prontuário:', prontuario);
-            }
-            
+            // Preencher os campos do formulário de edição
             document.getElementById('diagnostico').value = prontuario.diagnostico || '';
             document.getElementById('prescricao').value = prontuario.prescricao || '';
             document.getElementById('exames').value = prontuario.exames_solicitados || '';
             
+            // Armazenar o ID do prontuário no formulário
             document.getElementById('formProntuario').dataset.prontuarioId = id;
             
-            $('#modalProntuario').modal('show');
+            // Mostrar o modal de edição
+            $('#modalEditarProntuario').modal('show');
         } catch (error) {
             console.error('Erro:', error);
             alert(`Erro ao carregar dados do prontuário: ${error.message}`);
         }
+    }
+
+    // Função para visualizar prontuário
+    function visualizarProntuario(id) {
+        carregarDetalhesProntuario(id);
     }
 
     async function salvarProntuario() {
