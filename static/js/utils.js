@@ -85,6 +85,7 @@ const Utils = {
     fetchWithRetry: async function(url, options = {}, retries = 3) {
         try {
             Utils.toggleLoading(true);
+            console.log(`Fazendo requisição para: ${url}`); // Debug
             
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -99,8 +100,11 @@ const Utils = {
             const response = await fetch(url, options);
             clearTimeout(timeoutId);
             
+            console.log(`Status da resposta: ${response.status}`); // Debug
+            
             if (!response.ok) {
                 const errorData = await response.json();
+                console.error('Erro na resposta:', errorData); // Debug
                 throw new Error(JSON.stringify({
                     code: response.status,
                     message: errorData.erro || errorData.description || 'Erro desconhecido'
@@ -109,7 +113,8 @@ const Utils = {
             
             return response;
         } catch (error) {
-            if (retries > 0 && !error.name === 'AbortError') {
+            console.error('Erro na requisição:', error); // Debug
+            if (retries > 0 && error.name !== 'AbortError') {
                 console.warn(`Tentativa falhou, tentando novamente... (${retries} tentativas restantes)`);
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 return Utils.fetchWithRetry(url, options, retries - 1);

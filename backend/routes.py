@@ -50,28 +50,45 @@ def recepcionista_required(f):
 @api.route('/api/consultas', methods=['GET'])
 @login_required
 def listar_consultas():
-    consultas = Consulta.query.all()
-    return jsonify([{
-        'id': c.id,
-        'paciente_id': c.paciente_id,
-        'medico_id': c.medico_id,
-        'data_hora': c.data_hora.isoformat(),
-        'status': c.status
-    } for c in consultas])
+    try:
+        consultas = Consulta.query.all()
+        return jsonify([{
+            'id': c.id,
+            'paciente_id': c.paciente_id,
+            'medico_id': c.medico_id,
+            'data_hora': c.data_hora.isoformat(),
+            'status': c.status,
+            'paciente': {'nome': c.paciente.nome},
+            'medico': {'nome': c.medico.nome}
+        } for c in consultas])
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500
 
 @api.route('/api/consultas', methods=['POST'])
 @login_required
 def criar_consulta():
-    dados = request.get_json()
-    consulta = Consulta(
-        paciente_id=dados['paciente_id'],
-        medico_id=dados['medico_id'],
-        data_hora=datetime.fromisoformat(dados['data_hora']),
-        status='agendada'
-    )
-    db.session.add(consulta)
-    db.session.commit()
-    return jsonify({'mensagem': 'Consulta criada com sucesso', 'id': consulta.id})
+    try:
+        dados = request.get_json()
+        print(f"Dados recebidos: {dados}")  # Log para debug
+        
+        consulta = Consulta(
+            paciente_id=dados['paciente_id'],
+            medico_id=dados['medico_id'],
+            data_hora=datetime.fromisoformat(dados['data_hora']),
+            status='agendada'
+        )
+        
+        db.session.add(consulta)
+        db.session.commit()
+        
+        return jsonify({
+            'mensagem': 'Consulta criada com sucesso',
+            'id': consulta.id
+        })
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao criar consulta: {str(e)}")  # Log para debug
+        return jsonify({'erro': str(e)}), 500
 
 @api.route('/api/consultas/<int:id>', methods=['GET'])
 @login_required
@@ -113,25 +130,24 @@ def cancelar_consulta(id):
     db.session.commit()
     return jsonify({'mensagem': 'Consulta cancelada com sucesso'})
 
-@api.route('/prontuarios/criar', methods=['POST'])
+@api.route('/api/prontuarios', methods=['POST'])
 @login_required
 @medico_required
 def criar_prontuario():
-    """Cria um novo prontuário"""
-    dados = request.get_json()
-    
-    prontuario = Prontuario(
-        consulta_id=dados['consulta_id'],
-        diagnostico=dados['diagnostico'],
-        prescricao=dados['prescricao'],
-        exames_solicitados=dados['exames_solicitados']
-    )
-    
-    db.session.add(prontuario)
-    db.session.commit()
-    
-    return jsonify({'mensagem': 'Prontuário criado com sucesso'})
-
+    try:
+        dados = request.get_json()
+        prontuario = Prontuario(
+            consulta_id=dados['consulta_id'],
+            diagnostico=dados['diagnostico'],
+            prescricao=dados['prescricao'],
+            exames_solicitados=dados['exames_solicitados']
+        )
+        db.session.add(prontuario)
+        db.session.commit()
+        return jsonify({'mensagem': 'Prontuário criado com sucesso'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'erro': str(e)}), 500
 
 @api.route('/consultas/<int:id>/detalhes', methods=['GET'])
 @login_required
@@ -151,7 +167,6 @@ def obter_consulta_detalhes(id):
             'nome': consulta.medico.nome
         }
     })
-
 
 @api.route('/prontuarios/<int:id>/detalhes', methods=['GET'])
 @login_required
@@ -203,7 +218,6 @@ def obter_prontuario_detalhes(id):
         traceback.print_exc()
         return jsonify({'erro': f'Erro ao carregar dados do prontuário: {str(e)}'}), 500
 
-
 @api.route('/prontuarios/<int:id>/atualizar', methods=['PUT'])
 @login_required
 @medico_required
@@ -229,7 +243,6 @@ def atualizar_prontuario(id):
         db.session.rollback()
         return jsonify({'erro': str(e)}), 500
 
-
 @api.route('/prontuarios/<int:id>/imprimir', methods=['GET'])
 @login_required
 def imprimir_prontuario(id):
@@ -253,7 +266,6 @@ def imprimir_prontuario(id):
         print(f"Erro ao gerar impressão: {str(e)}")
         return jsonify({'erro': str(e)}), 500
 
-
 @api.route('/pacientes/criar', methods=['POST'])
 @login_required
 def criar_paciente():
@@ -272,7 +284,6 @@ def criar_paciente():
     
     return jsonify({'mensagem': 'Paciente criado com sucesso'})
 
-
 @api.route('/pacientes/<int:id>/detalhes', methods=['GET'])
 @login_required
 def obter_paciente_detalhes(id):
@@ -285,7 +296,6 @@ def obter_paciente_detalhes(id):
         'data_nascimento': paciente.data_nascimento.strftime('%Y-%m-%d'),
         'endereco': paciente.endereco
     })
-
 
 @api.route('/pacientes/<int:id>/atualizar', methods=['PUT'])
 @login_required
@@ -302,7 +312,6 @@ def atualizar_paciente_dados(id):
     db.session.commit()
     return jsonify({'mensagem': 'Paciente atualizado com sucesso'})
 
-
 @api.route('/pacientes/<int:id>/excluir', methods=['DELETE'])
 @login_required
 def excluir_paciente_registro(id):
@@ -311,7 +320,6 @@ def excluir_paciente_registro(id):
     db.session.delete(paciente)
     db.session.commit()
     return jsonify({'mensagem': 'Paciente removido com sucesso'})
-
 
 @api.route('/pacientes/<int:id>/historico', methods=['GET'])
 @login_required
@@ -334,7 +342,6 @@ def obter_historico_paciente(id):
             'diagnostico': c.prontuario.diagnostico if c.prontuario else None
         } if c.status == 'realizada' else None
     } for c in consultas])
-
 
 @views.route('/dashboard')
 @login_required

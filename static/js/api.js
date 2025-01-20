@@ -11,15 +11,23 @@ window.API = window.API || {
     // Consultas
     async criarConsulta(dados) {
         try {
+            console.log('Enviando dados:', dados); // Debug
             const response = await Utils.fetchWithRetry('/api/consultas', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dados)
             });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.erro || 'Erro ao criar consulta');
+            }
+            
             const result = await response.json();
             Utils.mostrarFeedback('Consulta criada com sucesso!');
             return result;
         } catch (error) {
+            console.error('Erro ao criar consulta:', error); // Debug
             Utils.mostrarFeedback(error.message, 'danger');
             throw error;
         }
