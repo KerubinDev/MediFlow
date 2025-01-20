@@ -4,6 +4,8 @@ from backend.models import (Usuario, Paciente, Medico, Consulta, Prontuario,
     Pagamento)
 from backend.database import db
 from datetime import datetime, date
+from functools import wraps
+from flask import abort
 
 # Criação do Blueprint para as rotas da API
 api = Blueprint('api', __name__)
@@ -184,8 +186,25 @@ def gerenciar_pagamentos():
     return jsonify({'mensagem': 'Pagamento registrado com sucesso'})
 
 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.tipo != 'admin':
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
+def medico_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.tipo != 'medico':
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
 @views.route('/dashboard')
 @login_required
+@admin_required
 def dashboard():
     """Renderiza o dashboard principal"""
     stats = {
@@ -211,6 +230,7 @@ def consultas():
 
 @views.route('/prontuarios')
 @login_required
+@medico_required
 def prontuarios():
     """Página de prontuários médicos"""
     prontuarios = Prontuario.query.order_by(

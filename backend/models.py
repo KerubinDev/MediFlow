@@ -22,6 +22,28 @@ class Usuario(db.Model):
     def verificar_senha(self, senha):
         return check_password_hash(self._senha_hash, senha)
 
+    def is_admin(self):
+        return self.tipo == 'admin'
+    
+    def is_medico(self):
+        return self.tipo == 'medico'
+    
+    def is_recepcionista(self):
+        return self.tipo == 'recepcionista'
+    
+    # Métodos requeridos pelo Flask-Login
+    def is_authenticated(self):
+        return True
+    
+    def is_active(self):
+        return True
+    
+    def is_anonymous(self):
+        return False
+    
+    def get_id(self):
+        return str(self.id)
+
 
 class Paciente(db.Model):
     """Modelo para pacientes"""
