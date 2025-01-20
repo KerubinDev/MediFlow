@@ -246,9 +246,18 @@
             const form = document.getElementById('formUsuario');
             const id = form.dataset.usuarioId;
             
+            // Validar campos obrigatórios
+            const campos = ['nome', 'email', 'tipo'];
+            if (!id) campos.push('senha'); // Senha obrigatória apenas para novo usuário
+            
+            const camposFaltando = campos.filter(campo => !document.getElementById(campo).value.trim());
+            if (camposFaltando.length > 0) {
+                throw new Error(`Campos obrigatórios não preenchidos: ${camposFaltando.join(', ')}`);
+            }
+            
             const dados = {
-                nome: document.getElementById('nome').value,
-                email: document.getElementById('email').value,
+                nome: document.getElementById('nome').value.trim(),
+                email: document.getElementById('email').value.trim(),
                 tipo: document.getElementById('tipo').value
             };
             
@@ -258,8 +267,9 @@
                 dados.senha = senha;
             }
 
+            let response;
             if (id) {
-                await fetch(`/api/usuarios/${id}`, {
+                response = await fetch(`/api/usuarios/${id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -267,10 +277,7 @@
                     body: JSON.stringify(dados)
                 });
             } else {
-                if (!senha) {
-                    throw new Error('Senha é obrigatória para novo usuário');
-                }
-                await fetch('/api/usuarios', {
+                response = await fetch('/api/usuarios/criar', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -278,6 +285,14 @@
                     body: JSON.stringify(dados)
                 });
             }
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.erro || 'Erro ao salvar usuário');
+            }
+            
+            const result = await response.json();
+            alert(result.mensagem || 'Usuário salvo com sucesso!');
             
             // Limpa e fecha o modal antes de recarregar
             limparModais();
