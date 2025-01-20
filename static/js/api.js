@@ -269,6 +269,24 @@ window.API = window.API || {
             );
             throw error;
         }
+    },
+
+    async excluirUsuario(id) {
+        try {
+            console.log(`Excluindo usuário ${id}`);
+            const result = await Utils.fetchWithRetry(`/api/usuarios/${id}`, {
+                method: 'DELETE'
+            });
+            Utils.mostrarFeedback('Usuário excluído com sucesso!');
+            return result;
+        } catch (error) {
+            console.error('Erro ao excluir usuário:', error);
+            Utils.mostrarFeedback(
+                error.message || 'Erro ao excluir usuário. Tente novamente.',
+                'danger'
+            );
+            throw error;
+        }
     }
 };
 

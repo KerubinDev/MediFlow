@@ -236,6 +236,7 @@
 
     async function salvarUsuario() {
         try {
+            Utils.toggleLoading(true);
             const form = document.getElementById('formUsuario');
             const id = form.dataset.usuarioId;
             
@@ -243,9 +244,9 @@
             const campos = ['nome', 'email', 'tipo'];
             if (!id) campos.push('senha'); // Senha obrigatória apenas para novo usuário
             
-            const camposFaltando = campos.filter(campo => !document.getElementById(campo).value.trim());
-            if (camposFaltando.length > 0) {
-                throw new Error(`Campos obrigatórios não preenchidos: ${camposFaltando.join(', ')}`);
+            if (!Utils.validarFormulario('formUsuario')) {
+                Utils.mostrarFeedback('Por favor, preencha todos os campos obrigatórios', 'warning');
+                return;
             }
             
             const dados = {
@@ -260,57 +261,35 @@
                 dados.senha = senha;
             }
 
-            let response;
             if (id) {
-                response = await fetch(`/api/usuarios/${id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(dados)
-                });
+                await API.atualizarUsuario(id, dados);
             } else {
-                response = await fetch('/api/usuarios/criar', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(dados)
-                });
+                await API.criarUsuario(dados);
             }
-            
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.erro || 'Erro ao salvar usuário');
-            }
-            
-            const result = await response.json();
-            alert(result.mensagem || 'Usuário salvo com sucesso!');
             
             // Limpa e fecha o modal antes de recarregar
-            limparModais();
+            Utils.limparModais();
             location.reload();
         } catch (error) {
             console.error('Erro:', error);
-            alert(`Erro ao salvar usuário: ${error.message}`);
+            Utils.mostrarFeedback(error.message || 'Erro ao salvar usuário', 'danger');
+        } finally {
+            Utils.toggleLoading(false);
         }
     }
 
     async function excluirUsuario(id) {
         if (confirm('Tem certeza que deseja excluir este usuário?')) {
             try {
-                const response = await fetch(`/api/usuarios/${id}`, {
-                    method: 'DELETE'
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Erro ao excluir usuário');
-                }
-                
+                Utils.toggleLoading(true);
+                await API.excluirUsuario(id);
+                Utils.mostrarFeedback('Usuário excluído com sucesso');
                 location.reload();
             } catch (error) {
                 console.error('Erro:', error);
-                alert('Erro ao excluir usuário');
+                Utils.mostrarFeedback('Erro ao excluir usuário', 'danger');
+            } finally {
+                Utils.toggleLoading(false);
             }
         }
     }
