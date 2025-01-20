@@ -95,22 +95,28 @@ const Utils = {
             const timeoutId = setTimeout(() => controller.abort(), 10000);
             
             options.signal = controller.signal;
-            options.headers = {
-                ...options.headers,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            };
+            
+            // Adicionar headers apenas se não for GET
+            if (options.method !== 'GET') {
+                options.headers = {
+                    ...options.headers,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                };
+            }
             
             const response = await fetch(url, options);
             clearTimeout(timeoutId);
             
             console.log(`Status da resposta: ${response.status}`);
-            const responseData = await response.json();
-            console.log('Resposta:', responseData);
             
             if (!response.ok) {
-                throw new Error(responseData.erro || 'Erro na requisição');
+                const errorData = await response.json();
+                throw new Error(errorData.erro || 'Erro na requisição');
             }
+            
+            const responseData = await response.json();
+            console.log('Resposta:', responseData);
             
             return responseData;
         } catch (error) {

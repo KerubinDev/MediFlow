@@ -72,8 +72,7 @@ window.API = window.API || {
         try {
             console.log(`Obtendo consulta ${id}`);
             const result = await Utils.fetchWithRetry(`/api/consultas/${id}`, {
-                method: 'GET',
-                headers: { 'Accept': 'application/json' }
+                method: 'GET'
             });
             return result;
         } catch (error) {

@@ -112,20 +112,22 @@ def criar_consulta():
 @login_required
 def obter_consulta(id):
     try:
-        if not id:
-            return jsonify({'erro': 'ID da consulta não fornecido'}), 400
-            
+        current_app.logger.debug(f"Obtendo consulta {id}")
+        
         consulta = Consulta.query.get(id)
         if not consulta:
+            current_app.logger.error(f"Consulta {id} não encontrada")
             return jsonify({'erro': f'Consulta {id} não encontrada'}), 404
             
         if not consulta.paciente:
+            current_app.logger.error(f"Paciente não encontrado para consulta {id}")
             return jsonify({'erro': 'Paciente não encontrado para esta consulta'}), 400
             
         if not consulta.medico:
+            current_app.logger.error(f"Médico não encontrado para consulta {id}")
             return jsonify({'erro': 'Médico não encontrado para esta consulta'}), 400
             
-        return jsonify({
+        dados = {
             'id': consulta.id,
             'paciente_id': consulta.paciente_id,
             'medico_id': consulta.medico_id,
@@ -139,10 +141,13 @@ def obter_consulta(id):
                 'id': consulta.medico.id,
                 'nome': consulta.medico.nome
             }
-        })
+        }
+        
+        current_app.logger.debug(f"Dados da consulta: {dados}")
+        return jsonify(dados)
     except Exception as e:
         current_app.logger.error(f"Erro ao obter consulta {id}: {str(e)}")
-        return jsonify({'erro': f'Erro ao obter consulta: {str(e)}'}), 500
+        return jsonify({'erro': str(e)}), 500
 
 @api.route('/consultas/<int:id>', methods=['PUT'])
 @login_required
