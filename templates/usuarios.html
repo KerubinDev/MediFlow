@@ -103,7 +103,7 @@
 </div>
 
 <!-- Modal de Usuário -->
-<div class="modal fade" id="modalUsuario" tabindex="-1">
+<div class="modal fade" id="modalUsuario" tabindex="-1" data-bs-backdrop="false">
     <div class="modal-dialog">
         <div class="modal-content glass-card">
             <div class="modal-header border-0">
@@ -166,23 +166,145 @@
         }
     });
 
-    // Funções do CRUD
+    // Função para limpar modais
+    function limparModais() {
+        // Remove backdrops
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        
+        // Remove classes do body
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = 'auto';
+        document.body.style.paddingRight = '0';
+        
+        // Fecha todos os modais
+        document.querySelectorAll('.modal').forEach(modal => {
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+        });
+    }
+
     function mostrarModalUsuario() {
-        $('#modalUsuario').modal('show');
+        limparModais();
+        document.getElementById('formUsuario').reset();
+        document.getElementById('formUsuario').removeAttribute('data-usuario-id');
+        document.querySelector('#modalUsuario .modal-title').textContent = 'Novo Usuário';
+        
+        const modalEl = document.getElementById('modalUsuario');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+        
+        // Remove qualquer backdrop residual
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.body.style.overflow = 'auto';
+        document.body.style.paddingRight = '0';
     }
 
-    function editarUsuario(id) {
-        // Implementar edição
-    }
-
-    function excluirUsuario(id) {
-        if (confirm('Tem certeza que deseja excluir este usuário?')) {
-            // Implementar exclusão
+    async function editarUsuario(id) {
+        try {
+            limparModais();
+            
+            const response = await fetch(`/api/usuarios/${id}/detalhes`);
+            if (!response.ok) {
+                throw new Error('Erro ao carregar dados do usuário');
+            }
+            
+            const usuario = await response.json();
+            
+            // Preencher os campos do formulário
+            document.getElementById('nome').value = usuario.nome;
+            document.getElementById('email').value = usuario.email;
+            document.getElementById('tipo').value = usuario.tipo;
+            document.getElementById('senha').value = ''; // Não preenchemos a senha por segurança
+            
+            // Armazenar o ID do usuário no formulário
+            document.getElementById('formUsuario').dataset.usuarioId = id;
+            
+            // Atualizar título do modal
+            document.querySelector('#modalUsuario .modal-title').textContent = 'Editar Usuário';
+            
+            // Mostrar o modal
+            const modalEl = document.getElementById('modalUsuario');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+            
+            // Remove qualquer backdrop residual
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.style.overflow = 'auto';
+            document.body.style.paddingRight = '0';
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Erro ao carregar dados do usuário');
         }
     }
 
-    function salvarUsuario() {
-        // Implementar salvamento
+    async function salvarUsuario() {
+        try {
+            const form = document.getElementById('formUsuario');
+            const id = form.dataset.usuarioId;
+            
+            const dados = {
+                nome: document.getElementById('nome').value,
+                email: document.getElementById('email').value,
+                tipo: document.getElementById('tipo').value
+            };
+            
+            // Só incluir senha se foi preenchida
+            const senha = document.getElementById('senha').value;
+            if (senha) {
+                dados.senha = senha;
+            }
+
+            if (id) {
+                await fetch(`/api/usuarios/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dados)
+                });
+            } else {
+                if (!senha) {
+                    throw new Error('Senha é obrigatória para novo usuário');
+                }
+                await fetch('/api/usuarios', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dados)
+                });
+            }
+            
+            // Limpa e fecha o modal antes de recarregar
+            limparModais();
+            location.reload();
+        } catch (error) {
+            console.error('Erro:', error);
+            alert(`Erro ao salvar usuário: ${error.message}`);
+        }
+    }
+
+    async function excluirUsuario(id) {
+        if (confirm('Tem certeza que deseja excluir este usuário?')) {
+            try {
+                const response = await fetch(`/api/usuarios/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao excluir usuário');
+                }
+                
+                location.reload();
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao excluir usuário');
+            }
+        }
     }
 </script>
 {% endblock %} 
