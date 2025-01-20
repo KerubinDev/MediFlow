@@ -47,77 +47,130 @@ def criar_usuarios_padrao():
     db.session.commit()
 
 def criar_dados_exemplo():
-    """Cria dados de exemplo para o sistema se não existirem"""
-    # Verifica se já existe médico
-    if not Medico.query.first():
-        medico = Medico(
+    """Cria dados de exemplo no banco de dados"""
+    
+    # Criar usuários
+    usuarios = [
+        Usuario(
+            nome='Admin',
+            email='admin@medflow.com',
+            senha=generate_password_hash('admin123'),
+            tipo='admin'
+        ),
+        Usuario(
             nome='Dr. João Silva',
-            especialidade='Clínico Geral',
-            horario_disponivel='08:00-18:00'
+            email='joao.silva@medflow.com',
+            senha=generate_password_hash('medico123'),
+            tipo='medico'
+        ),
+        Usuario(
+            nome='Maria Recepcionista',
+            email='maria@medflow.com',
+            senha=generate_password_hash('recep123'),
+            tipo='recepcionista'
         )
+    ]
+    
+    for usuario in usuarios:
+        db.session.add(usuario)
+    
+    db.session.flush()  # Para obter os IDs dos usuários
+    
+    # Criar médicos
+    medicos = [
+        Medico(
+            nome='Dr. João Silva',
+            crm='12345-SP',  # Adicionado CRM
+            especialidade='Clínico Geral',
+            usuario_id=usuarios[1].id,  # Associar ao usuário médico
+            horario_disponivel='08:00-18:00'
+        ),
+        Medico(
+            nome='Dra. Ana Santos',
+            crm='54321-SP',  # Adicionado CRM
+            especialidade='Pediatra',
+            usuario_id=usuarios[1].id,  # Você pode criar outro usuário médico se preferir
+            horario_disponivel='09:00-17:00'
+        )
+    ]
+    
+    for medico in medicos:
         db.session.add(medico)
-        db.session.flush()  # Para obter o ID do médico
-        
-        # Criar pacientes
-        pacientes = [
-            {
-                'nome': 'Ana Santos',
-                'telefone': '(11) 99999-1111',
-                'data_nascimento': datetime(1990, 5, 15),
-                'endereco': 'Rua A, 123'
-            },
-            {
-                'nome': 'Carlos Oliveira',
-                'telefone': '(11) 99999-2222',
-                'data_nascimento': datetime(1985, 8, 20),
-                'endereco': 'Rua B, 456'
-            }
-        ]
-        
-        for p in pacientes:
-            if not Paciente.query.filter_by(nome=p['nome']).first():
-                paciente = Paciente(**p)
-                db.session.add(paciente)
-                db.session.flush()  # Para obter o ID do paciente
-                
-                # Criar consultas para cada paciente
-                consulta = Consulta(
-                    paciente_id=paciente.id,
-                    medico_id=medico.id,
-                    data_hora=datetime.now() + timedelta(days=1),
-                    status='agendada'
-                )
-                db.session.add(consulta)
-                db.session.flush()
-                
-                # Criar prontuário
-                prontuario = Prontuario(
-                    consulta_id=consulta.id,
-                    diagnostico='Exemplo de diagnóstico',
-                    prescricao='Exemplo de prescrição',
-                    exames_solicitados='Exemplo de exames'
-                )
-                db.session.add(prontuario)
-                
-                # Criar pagamento
-                pagamento = Pagamento(
-                    paciente_id=paciente.id,
-                    consulta_id=consulta.id,
-                    valor=150.00,
-                    status='pendente'
-                )
-                db.session.add(pagamento)
-        
+    
+    db.session.flush()  # Para obter os IDs dos médicos
+    
+    # Criar pacientes
+    pacientes = [
+        Paciente(
+            nome='Carlos Oliveira',
+            telefone='(11) 99999-2222',
+            data_nascimento=datetime(1985, 8, 20),
+            endereco='Rua B, 456'
+        ),
+        Paciente(
+            nome='Ana Santos',
+            telefone='(11) 99999-1111',
+            data_nascimento=datetime(1990, 5, 15),
+            endereco='Rua A, 123'
+        )
+    ]
+    
+    for paciente in pacientes:
+        db.session.add(paciente)
+    
+    db.session.flush()  # Para obter os IDs dos pacientes
+    
+    # Criar consultas
+    hoje = datetime.now()
+    consultas = [
+        Consulta(
+            paciente_id=pacientes[0].id,
+            medico_id=medicos[0].id,
+            data_hora=hoje + timedelta(days=1, hours=10),
+            status='agendada'
+        ),
+        Consulta(
+            paciente_id=pacientes[1].id,
+            medico_id=medicos[1].id,
+            data_hora=hoje + timedelta(days=2, hours=14),
+            status='agendada'
+        )
+    ]
+    
+    for consulta in consultas:
+        db.session.add(consulta)
+    
+    # Criar prontuários para consultas realizadas
+    consulta_realizada = Consulta(
+        paciente_id=pacientes[0].id,
+        medico_id=medicos[0].id,
+        data_hora=hoje - timedelta(days=5),
+        status='realizada'
+    )
+    db.session.add(consulta_realizada)
+    db.session.flush()
+    
+    prontuario = Prontuario(
+        consulta_id=consulta_realizada.id,
+        diagnostico='Gripe comum',
+        prescricao='Repouso e hidratação',
+        exames_solicitados='Hemograma completo'
+    )
+    db.session.add(prontuario)
+    
+    try:
         db.session.commit()
+        print("Dados de exemplo criados com sucesso!")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao criar dados de exemplo: {str(e)}")
+        raise
 
 def inicializar_banco():
-    """Inicializa o banco de dados com dados padrão"""
-    db.create_all()
-    
-    if not banco_ja_inicializado():
-        print("\nCriando dados iniciais do banco...")
-        criar_usuarios_padrao()
-        criar_dados_exemplo()
-        print("Banco de dados inicializado com sucesso!")
-    else:
-        print("\nBanco de dados já inicializado.") 
+    """Inicializa o banco de dados com dados de exemplo"""
+    db.drop_all()  # Limpa o banco existente
+    db.create_all()  # Cria as tabelas
+    criar_dados_exemplo()  # Popula com dados de exemplo
+
+if __name__ == '__main__':
+    inicializar_banco() 
