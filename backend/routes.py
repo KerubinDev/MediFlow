@@ -12,7 +12,41 @@ from sqlalchemy import func, cast, Date
 api = Blueprint('api', __name__)
 views = Blueprint('views', __name__)
 
+# Definição dos decoradores de permissão
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or (
+            current_user.tipo != 'admin' and 
+            current_user.email != 'admin@medflow.com'
+        ):
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
 
+def medico_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or (
+            current_user.tipo != 'medico' and 
+            current_user.email != 'admin@medflow.com'
+        ):
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
+def recepcionista_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or (
+            current_user.tipo != 'recepcionista' and 
+            current_user.email != 'admin@medflow.com'
+        ):
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Rotas da API
 @api.route('/consultas/criar', methods=['POST'])
 @login_required
 def criar_consulta():
@@ -198,39 +232,6 @@ def obter_historico_paciente(id):
         }
     } for c in consultas])
 
-
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or (
-            current_user.tipo != 'admin' and 
-            current_user.email != 'admin@medflow.com'
-        ):
-            abort(403)
-        return f(*args, **kwargs)
-    return decorated_function
-
-def medico_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or (
-            current_user.tipo != 'medico' and 
-            current_user.email != 'admin@medflow.com'
-        ):
-            abort(403)
-        return f(*args, **kwargs)
-    return decorated_function
-
-def recepcionista_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or (
-            current_user.tipo != 'recepcionista' and 
-            current_user.email != 'admin@medflow.com'
-        ):
-            abort(403)
-        return f(*args, **kwargs)
-    return decorated_function
 
 @views.route('/dashboard')
 @login_required
