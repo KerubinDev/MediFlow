@@ -206,13 +206,9 @@
     async function editarUsuario(id) {
         try {
             limparModais();
+            Utils.toggleLoading(true);
             
-            const response = await fetch(`/api/usuarios/${id}/detalhes`);
-            if (!response.ok) {
-                throw new Error('Erro ao carregar dados do usuário');
-            }
-            
-            const usuario = await response.json();
+            const usuario = await API.obterUsuario(id);
             
             // Preencher os campos do formulário
             document.getElementById('nome').value = usuario.nome;
@@ -230,14 +226,11 @@
             const modalEl = document.getElementById('modalUsuario');
             const modal = new bootstrap.Modal(modalEl);
             modal.show();
-            
-            // Remove qualquer backdrop residual
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-            document.body.style.overflow = 'auto';
-            document.body.style.paddingRight = '0';
         } catch (error) {
             console.error('Erro:', error);
-            alert('Erro ao carregar dados do usuário');
+            Utils.mostrarFeedback('Erro ao carregar dados do usuário', 'danger');
+        } finally {
+            Utils.toggleLoading(false);
         }
     }
 
