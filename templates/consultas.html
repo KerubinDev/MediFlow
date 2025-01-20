@@ -157,22 +157,22 @@
                         <select class="form-control" id="paciente" required>
                             {% for paciente in pacientes %}
                             <option value="{{ paciente.id }}">{{ paciente.nome }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                        {% endfor %}
+                    </select>
+                </div>
                     <div class="mb-3">
                         <label class="form-label">Médico</label>
                         <select class="form-control" id="medico" required>
                             {% for medico in medicos %}
                             <option value="{{ medico.id }}">{{ medico.nome }}</option>
                             {% endfor %}
-                        </select>
-                    </div>
+                    </select>
+                </div>
                     <div class="mb-3">
                         <label class="form-label">Data e Hora</label>
                         <input type="datetime-local" class="form-control" id="dataHora" required>
                     </div>
-                </form>
+            </form>
             </div>
             <div class="modal-footer border-0">
                 <button type="button" class="btn-neon" onclick="salvarConsulta()">Salvar</button>
@@ -185,8 +185,11 @@
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/api.js') }}"></script>
 <script src="{{ url_for('static', filename='js/particles-config.js') }}"></script>
-<script>
+    <script>
     particlesJS('particles-js', particlesConfig);
+
+    // Criar referência ao modal usando Bootstrap 5
+    const modalConsulta = new bootstrap.Modal(document.getElementById('modalConsulta'));
 
     async function editarConsulta(id) {
         try {
@@ -200,8 +203,9 @@
             
             document.getElementById('formConsulta').dataset.consultaId = id;
             
-            $('#modalConsulta').modal('show');
+            modalConsulta.show(); // Usando Bootstrap 5 nativo
         } catch (error) {
+            console.error('Erro:', error);
             alert('Erro ao carregar dados da consulta');
         }
     }
@@ -232,7 +236,7 @@
         document.getElementById('formConsulta').reset();
         document.getElementById('formConsulta').removeAttribute('data-consulta-id');
         document.querySelector('#modalConsulta .modal-title').textContent = 'Nova Consulta';
-        $('#modalConsulta').modal('show');
+        modalConsulta.show(); // Usando Bootstrap 5 nativo
     }
 
     async function realizarConsulta(id) {
@@ -260,5 +264,5 @@
     function verProntuario(id) {
         window.location.href = `/prontuarios/${id}`;
     }
-</script>
+    </script>
 {% endblock %}

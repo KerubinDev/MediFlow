@@ -202,6 +202,9 @@
 <script>
     particlesJS('particles-js', particlesConfig);
 
+    // Criar referência ao modal usando Bootstrap 5
+    const modalProntuario = new bootstrap.Modal(document.getElementById('modalProntuario'));
+
     async function editarProntuario(id) {
         try {
             console.log(`Editando prontuário ${id}`);
@@ -225,7 +228,7 @@
             
             document.getElementById('formProntuario').dataset.prontuarioId = id;
             
-            $('#modalProntuario').modal('show');
+            modalProntuario.show(); // Usando Bootstrap 5 nativo
         } catch (error) {
             console.error('Erro:', error);
             alert(`Erro ao carregar dados do prontuário: ${error.message}`);
