@@ -329,7 +329,7 @@ def atualizar_prontuario(id):
 @api.route('/prontuarios/<int:id>/imprimir', methods=['GET'])
 @login_required
 def imprimir_prontuario(id):
-    """Gera PDF do prontuário para impressão"""
+    """Gera visualização do prontuário para impressão"""
     try:
         print(f"Gerando impressão do prontuário {id}")
         prontuario = Prontuario.query.get_or_404(id)
@@ -344,7 +344,7 @@ def imprimir_prontuario(id):
         }
         
         print(f"Dados para impressão: {dados}")
-        return jsonify(dados)
+        return render_template('prontuario_print.html', dados=dados)
     except Exception as e:
         print(f"Erro ao gerar impressão: {str(e)}")
         return jsonify({'erro': str(e)}), 500

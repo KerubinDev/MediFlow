@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Prontuário Médico - {{ dados.paciente }}</title>
+    <style>
+        @media print {
+            body { 
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                margin: 2cm;
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 2rem;
+                border-bottom: 2px solid #333;
+                padding-bottom: 1rem;
+            }
+            .logo {
+                font-size: 24px;
+                font-weight: bold;
+                color: #2c3e50;
+                margin-bottom: 0.5rem;
+            }
+            .info {
+                margin-bottom: 2rem;
+            }
+            .info-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 0.5rem;
+            }
+            .section {
+                margin-bottom: 2rem;
+            }
+            .section-title {
+                font-weight: bold;
+                margin-bottom: 0.5rem;
+                color: #2c3e50;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 0.25rem;
+            }
+            .section-content {
+                padding: 0.5rem;
+                background: #f8f9fa;
+                border-radius: 4px;
+            }
+            .footer {
+                margin-top: 3rem;
+                text-align: center;
+                font-size: 0.9rem;
+                color: #666;
+            }
+            .assinatura {
+                margin-top: 4rem;
+                text-align: center;
+            }
+            .linha-assinatura {
+                width: 200px;
+                border-top: 1px solid #333;
+                margin: 0.5rem auto;
+            }
+            @page {
+                size: A4;
+                margin: 2cm;
+            }
+        }
+        /* Estilos para visualização na tela */
+        body { 
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 2cm;
+            background: #fff;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #333;
+            padding-bottom: 1rem;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .info {
+            margin-bottom: 2rem;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .section {
+            margin-bottom: 2rem;
+        }
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.25rem;
+        }
+        .section-content {
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .footer {
+            margin-top: 3rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .assinatura {
+            margin-top: 4rem;
+            text-align: center;
+        }
+        .linha-assinatura {
+            width: 200px;
+            border-top: 1px solid #333;
+            margin: 0.5rem auto;
+        }
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #4ECDC4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: none;
+        }
+        @media screen {
+            .print-button {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button onclick="window.print()" class="print-button">Imprimir</button>
+    
+    <div class="header">
+        <div class="logo">MediFlow</div>
+        <div>Sistema de Gestão Médica</div>
+    </div>
+
+    <div class="info">
+        <div class="info-row">
+            <strong>Paciente:</strong> {{ dados.paciente }}
+        </div>
+        <div class="info-row">
+            <strong>Médico:</strong> {{ dados.medico }}
+        </div>
+        <div class="info-row">
+            <strong>Data:</strong> {{ dados.data }}
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Diagnóstico</div>
+        <div class="section-content">
+            {{ dados.diagnostico }}
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Prescrição</div>
+        <div class="section-content">
+            {{ dados.prescricao }}
+        </div>
+    </div>
+
+    {% if dados.exames %}
+    <div class="section">
+        <div class="section-title">Exames Solicitados</div>
+        <div class="section-content">
+            {{ dados.exames }}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="assinatura">
+        <div class="linha-assinatura"></div>
+        <div>{{ dados.medico }}</div>
+        <div>CRM/XX XXXXX</div>
+    </div>
+
+    <div class="footer">
+        <p>Este documento é parte do prontuário médico do paciente e está protegido pelo sigilo médico.</p>
+        <p>MediFlow - Sistema de Gestão Médica</p>
+    </div>
+</body>
+</html> 
