@@ -336,19 +336,46 @@ def imprimir_prontuario(id):
 @login_required
 def criar_paciente():
     """Cria um novo paciente"""
-    dados = request.get_json()
-    
-    paciente = Paciente(
-        nome=dados['nome'],
-        telefone=dados['telefone'],
-        data_nascimento=datetime.strptime(dados['data_nascimento'], '%Y-%m-%d'),
-        endereco=dados['endereco']
-    )
-    
-    db.session.add(paciente)
-    db.session.commit()
-    
-    return jsonify({'mensagem': 'Paciente criado com sucesso'})
+    try:
+        dados = request.get_json()
+        current_app.logger.debug(f"Dados recebidos para criar paciente: {dados}")
+        
+        # Validar dados obrigatórios
+        campos_obrigatorios = ['nome', 'telefone', 'data_nascimento', 'endereco']
+        if not all(campo in dados for campo in campos_obrigatorios):
+            return jsonify({
+                'erro': 'Dados incompletos. Todos os campos são obrigatórios.'
+            }), 400
+        
+        # Validar formato da data
+        try:
+            data_nascimento = datetime.strptime(dados['data_nascimento'], '%Y-%m-%d')
+        except ValueError:
+            return jsonify({
+                'erro': 'Formato de data inválido. Use YYYY-MM-DD'
+            }), 400
+        
+        # Criar o paciente
+        paciente = Paciente(
+            nome=dados['nome'],
+            telefone=dados['telefone'],
+            data_nascimento=data_nascimento,
+            endereco=dados['endereco']
+        )
+        
+        db.session.add(paciente)
+        db.session.commit()
+        
+        current_app.logger.info(f"Paciente criado com sucesso: ID {paciente.id}")
+        return jsonify({
+            'mensagem': 'Paciente criado com sucesso',
+            'id': paciente.id
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Erro ao criar paciente: {str(e)}")
+        db.session.rollback()
+        return jsonify({'erro': str(e)}), 500
 
 @api.route('/pacientes/<int:id>/detalhes', methods=['GET'])
 @login_required

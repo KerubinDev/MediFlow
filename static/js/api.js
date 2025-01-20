@@ -118,12 +118,23 @@ window.API = window.API || {
 
     // Pacientes
     async criarPaciente(dados) {
-        const response = await fetch('/api/pacientes', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dados)
-        });
-        return response.json();
+        try {
+            console.log('Criando paciente:', dados);
+            const result = await Utils.fetchWithRetry('/api/pacientes/criar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            Utils.mostrarFeedback('Paciente criado com sucesso!');
+            return result;
+        } catch (error) {
+            console.error('Erro ao criar paciente:', error);
+            Utils.mostrarFeedback(
+                error.message || 'Erro ao criar paciente. Tente novamente.',
+                'danger'
+            );
+            throw error;
+        }
     },
 
     async obterPaciente(id) {
