@@ -191,55 +191,88 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script src="{{ url_for('static', filename='js/api.js') }}"></script>
+<script src="{{ url_for('static', filename='js/particles-config.js') }}"></script>
 <script>
-    particlesJS('particles-js', {
-        particles: {
-            number: { value: 80 },
-            color: { value: '#4ECDC4' },
-            shape: { type: 'circle' },
-            opacity: { value: 0.5 },
-            size: { value: 3 },
-            line_linked: {
-                enable: true,
-                distance: 150,
-                color: '#4ECDC4',
-                opacity: 0.4,
-                width: 1
-            },
-            move: {
-                enable: true,
-                speed: 2
-            }
-        }
-    });
+    particlesJS('particles-js', particlesConfig);
 
-    // Funções do CRUD
     function mostrarModalPaciente() {
         $('#modalPaciente').modal('show');
+        document.getElementById('formPaciente').reset();
     }
 
-    function editarPaciente(id) {
-        // Implementar edição
-    }
+    async function salvarPaciente() {
+        const dados = {
+            nome: document.getElementById('nome').value,
+            telefone: document.getElementById('telefone').value,
+            data_nascimento: document.getElementById('dataNascimento').value,
+            endereco: document.getElementById('endereco').value
+        };
 
-    function verHistorico(id) {
-        $('#modalHistorico').modal('show');
-        // Carregar histórico do paciente
-    }
-
-    function agendarConsulta(id) {
-        // Implementar agendamento
-    }
-
-    function excluirPaciente(id) {
-        if (confirm('Tem certeza que deseja excluir este paciente?')) {
-            // Implementar exclusão
+        try {
+            await API.criarPaciente(dados);
+            location.reload();
+        } catch (error) {
+            alert('Erro ao salvar paciente');
         }
     }
 
-    function salvarPaciente() {
-        // Implementar salvamento
+    async function editarPaciente(id) {
+        try {
+            const response = await fetch(`/api/pacientes/${id}`);
+            const paciente = await response.json();
+            
+            document.getElementById('nome').value = paciente.nome;
+            document.getElementById('telefone').value = paciente.telefone;
+            document.getElementById('dataNascimento').value = paciente.data_nascimento;
+            document.getElementById('endereco').value = paciente.endereco;
+            
+            $('#modalPaciente').modal('show');
+        } catch (error) {
+            alert('Erro ao carregar dados do paciente');
+        }
+    }
+
+    async function excluirPaciente(id) {
+        if (confirm('Tem certeza que deseja excluir este paciente?')) {
+            try {
+                await API.excluirPaciente(id);
+                location.reload();
+            } catch (error) {
+                alert('Erro ao excluir paciente');
+            }
+        }
+    }
+
+    async function verHistorico(id) {
+        try {
+            const historico = await API.obterHistoricoPaciente(id);
+            const historicoContent = document.getElementById('historicoContent');
+            
+            let html = '<ul class="historico-list">';
+            historico.forEach(consulta => {
+                html += `
+                    <li class="historico-item">
+                        <div><strong>Data:</strong> ${new Date(consulta.data_hora).toLocaleString()}</div>
+                        <div><strong>Médico:</strong> ${consulta.medico.nome}</div>
+                        <div><strong>Status:</strong> 
+                            <span class="status-badge status-${consulta.status}">${consulta.status}</span>
+                        </div>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+            
+            historicoContent.innerHTML = html;
+            $('#modalHistorico').modal('show');
+        } catch (error) {
+            alert('Erro ao carregar histórico');
+        }
+    }
+
+    async function agendarConsulta(pacienteId) {
+        // Redirecionar para a página de consultas com o paciente pré-selecionado
+        window.location.href = `/consultas?paciente=${pacienteId}`;
     }
 </script>
 {% endblock %}

@@ -183,56 +183,50 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script src="{{ url_for('static', filename='js/api.js') }}"></script>
+<script src="{{ url_for('static', filename='js/particles-config.js') }}"></script>
 <script>
-    particlesJS('particles-js', {
-        particles: {
-            number: { value: 80 },
-            color: { value: '#4ECDC4' },
-            shape: { type: 'circle' },
-            opacity: { value: 0.5 },
-            size: { value: 3 },
-            line_linked: {
-                enable: true,
-                distance: 150,
-                color: '#4ECDC4',
-                opacity: 0.4,
-                width: 1
-            },
-            move: {
-                enable: true,
-                speed: 2
+    particlesJS('particles-js', particlesConfig);
+
+    async function salvarConsulta() {
+        const dados = {
+            paciente_id: document.getElementById('paciente').value,
+            medico_id: document.getElementById('medico').value,
+            data_hora: document.getElementById('dataHora').value
+        };
+
+        try {
+            await API.criarConsulta(dados);
+            location.reload();
+        } catch (error) {
+            alert('Erro ao salvar consulta');
+        }
+    }
+
+    async function realizarConsulta(id) {
+        if (confirm('Confirmar realização da consulta?')) {
+            try {
+                await API.realizarConsulta(id);
+                location.reload();
+            } catch (error) {
+                alert('Erro ao realizar consulta');
             }
         }
-    });
-
-    // Funções do CRUD
-    function mostrarModalConsulta() {
-        $('#modalConsulta').modal('show');
     }
 
-    function editarConsulta(id) {
-        // Implementar edição
-    }
-
-    function realizarConsulta(id) {
-        if (confirm('Confirmar realização da consulta?')) {
-            // Implementar realização
-        }
-    }
-
-    function cancelarConsulta(id) {
+    async function cancelarConsulta(id) {
         if (confirm('Tem certeza que deseja cancelar esta consulta?')) {
-            // Implementar cancelamento
+            try {
+                await API.cancelarConsulta(id);
+                location.reload();
+            } catch (error) {
+                alert('Erro ao cancelar consulta');
+            }
         }
     }
 
     function verProntuario(id) {
-        // Implementar visualização do prontuário
-    }
-
-    function salvarConsulta() {
-        // Implementar salvamento
+        window.location.href = `/prontuarios/${id}`;
     }
 </script>
 {% endblock %}

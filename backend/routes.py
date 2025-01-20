@@ -363,3 +363,180 @@ def usuarios():
     """Página de gerenciamento de usuários"""
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     return render_template('usuarios.html', usuarios=usuarios)
+
+# Rotas da API
+@api.route('/consultas', methods=['POST'])
+@login_required
+def criar_consulta():
+    """Cria uma nova consulta"""
+    dados = request.get_json()
+    
+    consulta = Consulta(
+        paciente_id=dados['paciente_id'],
+        medico_id=dados['medico_id'],
+        data_hora=datetime.fromisoformat(dados['data_hora']),
+        status='agendada'
+    )
+    
+    db.session.add(consulta)
+    db.session.commit()
+    
+    return jsonify({'mensagem': 'Consulta criada com sucesso'})
+
+
+@api.route('/consultas/<int:id>/realizar', methods=['PUT'])
+@login_required
+@medico_required
+def realizar_consulta(id):
+    """Marca uma consulta como realizada"""
+    consulta = Consulta.query.get_or_404(id)
+    consulta.status = 'realizada'
+    db.session.commit()
+    return jsonify({'mensagem': 'Consulta realizada com sucesso'})
+
+
+@api.route('/consultas/<int:id>/cancelar', methods=['PUT'])
+@login_required
+def cancelar_consulta(id):
+    """Cancela uma consulta"""
+    consulta = Consulta.query.get_or_404(id)
+    consulta.status = 'cancelada'
+    db.session.commit()
+    return jsonify({'mensagem': 'Consulta cancelada com sucesso'})
+
+
+@api.route('/prontuarios', methods=['POST'])
+@login_required
+@medico_required
+def criar_prontuario():
+    """Cria um novo prontuário"""
+    dados = request.get_json()
+    
+    prontuario = Prontuario(
+        consulta_id=dados['consulta_id'],
+        diagnostico=dados['diagnostico'],
+        prescricao=dados['prescricao'],
+        exames_solicitados=dados['exames_solicitados']
+    )
+    
+    db.session.add(prontuario)
+    db.session.commit()
+    
+    return jsonify({'mensagem': 'Prontuário criado com sucesso'})
+
+
+@api.route('/prontuarios/<int:id>', methods=['GET'])
+@login_required
+@medico_required
+def obter_prontuario(id):
+    """Retorna os dados de um prontuário específico"""
+    prontuario = Prontuario.query.get_or_404(id)
+    return jsonify({
+        'id': prontuario.id,
+        'diagnostico': prontuario.diagnostico,
+        'prescricao': prontuario.prescricao,
+        'exames_solicitados': prontuario.exames_solicitados
+    })
+
+
+@api.route('/prontuarios/<int:id>', methods=['PUT'])
+@login_required
+@medico_required
+def atualizar_prontuario(id):
+    """Atualiza um prontuário existente"""
+    prontuario = Prontuario.query.get_or_404(id)
+    dados = request.get_json()
+    
+    prontuario.diagnostico = dados['diagnostico']
+    prontuario.prescricao = dados['prescricao']
+    prontuario.exames_solicitados = dados['exames_solicitados']
+    
+    db.session.commit()
+    return jsonify({'mensagem': 'Prontuário atualizado com sucesso'})
+
+
+@api.route('/prontuarios/<int:id>/imprimir', methods=['GET'])
+@login_required
+def imprimir_prontuario(id):
+    """Gera PDF do prontuário para impressão"""
+    prontuario = Prontuario.query.get_or_404(id)
+    # Implementar geração de PDF
+    return jsonify({'url': f'/static/prontuarios/prontuario_{id}.pdf'})
+
+
+@api.route('/pacientes', methods=['POST'])
+@login_required
+def criar_paciente():
+    """Cria um novo paciente"""
+    dados = request.get_json()
+    
+    paciente = Paciente(
+        nome=dados['nome'],
+        telefone=dados['telefone'],
+        data_nascimento=datetime.strptime(dados['data_nascimento'], '%Y-%m-%d'),
+        endereco=dados['endereco']
+    )
+    
+    db.session.add(paciente)
+    db.session.commit()
+    
+    return jsonify({'mensagem': 'Paciente criado com sucesso'})
+
+
+@api.route('/pacientes/<int:id>', methods=['GET'])
+@login_required
+def obter_paciente(id):
+    """Retorna os dados de um paciente específico"""
+    paciente = Paciente.query.get_or_404(id)
+    return jsonify({
+        'id': paciente.id,
+        'nome': paciente.nome,
+        'telefone': paciente.telefone,
+        'data_nascimento': paciente.data_nascimento.strftime('%Y-%m-%d'),
+        'endereco': paciente.endereco
+    })
+
+
+@api.route('/pacientes/<int:id>', methods=['PUT'])
+@login_required
+def atualizar_paciente(id):
+    """Atualiza um paciente existente"""
+    paciente = Paciente.query.get_or_404(id)
+    dados = request.get_json()
+    
+    paciente.nome = dados['nome']
+    paciente.telefone = dados['telefone']
+    paciente.data_nascimento = datetime.strptime(dados['data_nascimento'], '%Y-%m-%d')
+    paciente.endereco = dados['endereco']
+    
+    db.session.commit()
+    return jsonify({'mensagem': 'Paciente atualizado com sucesso'})
+
+
+@api.route('/pacientes/<int:id>', methods=['DELETE'])
+@login_required
+def excluir_paciente(id):
+    """Remove um paciente"""
+    paciente = Paciente.query.get_or_404(id)
+    db.session.delete(paciente)
+    db.session.commit()
+    return jsonify({'mensagem': 'Paciente removido com sucesso'})
+
+
+@api.route('/pacientes/<int:id>/historico', methods=['GET'])
+@login_required
+def obter_historico_paciente(id):
+    """Retorna o histórico de consultas do paciente"""
+    consultas = Consulta.query.filter_by(paciente_id=id).order_by(
+        Consulta.data_hora.desc()
+    ).all()
+    
+    return jsonify([{
+        'id': c.id,
+        'data_hora': c.data_hora.isoformat(),
+        'status': c.status,
+        'medico': {
+            'id': c.medico.id,
+            'nome': c.medico.nome
+        }
+    } for c in consultas])

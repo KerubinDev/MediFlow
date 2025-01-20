@@ -197,41 +197,47 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script src="{{ url_for('static', filename='js/api.js') }}"></script>
+<script src="{{ url_for('static', filename='js/particles-config.js') }}"></script>
 <script>
-    particlesJS('particles-js', {
-        particles: {
-            number: { value: 80 },
-            color: { value: '#4ECDC4' },
-            shape: { type: 'circle' },
-            opacity: { value: 0.5 },
-            size: { value: 3 },
-            line_linked: {
-                enable: true,
-                distance: 150,
-                color: '#4ECDC4',
-                opacity: 0.4,
-                width: 1
-            },
-            move: {
-                enable: true,
-                speed: 2
-            }
+    particlesJS('particles-js', particlesConfig);
+
+    async function editarProntuario(id) {
+        try {
+            const response = await fetch(`/api/prontuarios/${id}`);
+            const prontuario = await response.json();
+            
+            document.getElementById('diagnostico').value = prontuario.diagnostico;
+            document.getElementById('prescricao').value = prontuario.prescricao;
+            document.getElementById('exames').value = prontuario.exames_solicitados;
+            
+            $('#modalProntuario').modal('show');
+        } catch (error) {
+            alert('Erro ao carregar dados do prontuário');
         }
-    });
-
-    // Funções do CRUD
-    function editarProntuario(id) {
-        $('#modalProntuario').modal('show');
-        // Carregar dados do prontuário
     }
 
-    function imprimirProntuario(id) {
-        // Implementar impressão
+    async function salvarProntuario() {
+        const dados = {
+            diagnostico: document.getElementById('diagnostico').value,
+            prescricao: document.getElementById('prescricao').value,
+            exames_solicitados: document.getElementById('exames').value
+        };
+
+        try {
+            await API.atualizarProntuario(prontuarioId, dados);
+            location.reload();
+        } catch (error) {
+            alert('Erro ao salvar prontuário');
+        }
     }
 
-    function salvarProntuario() {
-        // Implementar salvamento
+    async function imprimirProntuario(id) {
+        try {
+            await API.imprimirProntuario(id);
+        } catch (error) {
+            alert('Erro ao imprimir prontuário');
+        }
     }
 </script>
 {% endblock %} 
