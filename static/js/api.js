@@ -97,7 +97,7 @@ window.API = window.API || {
     async obterProntuario(consultaId) {
         try {
             console.log(`Obtendo prontuário da consulta ${consultaId}`);
-            const result = await Utils.fetchWithRetry(`/api/prontuarios/${consultaId}/detalhes`, {
+            const result = await Utils.fetchWithRetry(`/api/prontuarios/consulta/${consultaId}`, {
                 method: 'GET'
             });
             return result;

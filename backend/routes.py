@@ -241,48 +241,65 @@ def obter_prontuario_detalhes(id):
     """Retorna detalhes de um prontuário específico"""
     try:
         print(f"Buscando prontuário com ID: {id}")
-        prontuario = Prontuario.query.get_or_404(id)
-        print(f"Prontuário encontrado: {prontuario.id}")
+        prontuario = Prontuario.query.get(id)
         
+        if not prontuario:
+            return jsonify({'erro': 'Prontuário não encontrado'}), 404
+            
         if not prontuario.consulta:
-            print("Consulta não encontrada")
             return jsonify({'erro': 'Consulta não encontrada para este prontuário'}), 404
             
-        print(f"Consulta encontrada: {prontuario.consulta.id}")
-        
-        if not prontuario.consulta.paciente:
-            print("Paciente não encontrado")
-            return jsonify({'erro': 'Paciente não encontrado para esta consulta'}), 404
-            
-        if not prontuario.consulta.medico:
-            print("Médico não encontrado")
-            return jsonify({'erro': 'Médico não encontrado para esta consulta'}), 404
-        
-        dados = {
+        return jsonify({
             'id': prontuario.id,
+            'consulta_id': prontuario.consulta_id,
+            'diagnostico': prontuario.diagnostico,
+            'prescricao': prontuario.prescricao,
+            'exames_solicitados': prontuario.exames_solicitados,
             'consulta': {
-                'id': prontuario.consulta.id,
                 'data_hora': prontuario.consulta.data_hora.isoformat(),
                 'paciente': {
-                    'id': prontuario.consulta.paciente.id,
                     'nome': prontuario.consulta.paciente.nome
                 },
                 'medico': {
-                    'id': prontuario.consulta.medico.id,
                     'nome': prontuario.consulta.medico.nome
                 }
-            },
+            }
+        })
+    except Exception as e:
+        print(f"Erro ao buscar prontuário: {str(e)}")
+        return jsonify({'erro': str(e)}), 500
+
+@api.route('/prontuarios/consulta/<int:consulta_id>', methods=['GET'])
+@login_required
+@medico_required
+def obter_prontuario_por_consulta(consulta_id):
+    """Retorna o prontuário de uma consulta específica"""
+    try:
+        print(f"Buscando prontuário para consulta ID: {consulta_id}")
+        prontuario = Prontuario.query.filter_by(consulta_id=consulta_id).first()
+        
+        if not prontuario:
+            return jsonify({'erro': 'Prontuário não encontrado para esta consulta'}), 404
+            
+        return jsonify({
+            'id': prontuario.id,
+            'consulta_id': prontuario.consulta_id,
             'diagnostico': prontuario.diagnostico,
             'prescricao': prontuario.prescricao,
-            'exames_solicitados': prontuario.exames_solicitados
-        }
-        print(f"Dados do prontuário: {dados}")
-        return jsonify(dados)
+            'exames_solicitados': prontuario.exames_solicitados,
+            'consulta': {
+                'data_hora': prontuario.consulta.data_hora.isoformat(),
+                'paciente': {
+                    'nome': prontuario.consulta.paciente.nome
+                },
+                'medico': {
+                    'nome': prontuario.consulta.medico.nome
+                }
+            }
+        })
     except Exception as e:
-        print(f"Erro ao obter prontuário: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({'erro': f'Erro ao carregar dados do prontuário: {str(e)}'}), 500
+        print(f"Erro ao buscar prontuário: {str(e)}")
+        return jsonify({'erro': str(e)}), 500
 
 @api.route('/prontuarios/<int:id>/atualizar', methods=['PUT'])
 @login_required
